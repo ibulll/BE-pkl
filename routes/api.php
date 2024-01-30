@@ -2,11 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\APi\Admin\JurnalController;
+use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\PermissionController;
+use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,34 +22,39 @@ use App\Http\Controllers\Api\Admin\PermissionController;
 */
 
 // Route Login
-Route::post('/login', [App\Http\Controllers\Api\Auth\LoginController::class, 'index']);
-
+Route::post('/login', [LoginController::class, 'index']);
 
 // group route with middleware "auth"
-Route::group(['middleware' => 'auth:api'], function () { // -> rawan bug....
+Route::group(['middleware' => 'auth:api'], function () {
     // logout
-    Route::post('/logout', [App\Http\Controllers\Api\Auth\LoginController::class, 'logout']);
+    Route::post('/logout', [LoginController::class, 'logout']);
 });
 
-
-// group route with prefix "admin"
+/// group route with prefix "admin"
 Route::prefix('admin')->group(function () {
-    // group route with middleware "auth:api"
-    Route::group(['middleware' => 'auth:api'], function () {
+    // group route with middleware "auth:api" and "checkRole:admin"
+    Route::group(['middleware' => ['auth:api', 'checkRole:1']], function () {
         // dashboard
         Route::get('/dashboard/count-data', [DashboardController::class, 'getCountData']);
 
-        //roles
-        Route::apiResource('/roles', App\Http\Controllers\Api\Admin\RoleController::class)->middleware('permission:roles.index|roles.store|roles.update|roles.delete');
+        // roles
+        Route::apiResource('/roles', RoleController::class)->middleware('permission:roles.index|roles.store|roles.update|roles.delete');
 
-        //permission
-        Route::get('/permissions', [\App\Http\Controllers\Api\Admin\PermissionController::class, 'index'])->middleware('permission:permission.index');
+        // permissions
+        Route::get('/permissions', [PermissionController::class, 'index'])->middleware('permission:permissions.index');
 
-        //user
-        Route::apiResource('/roles', App\Http\Controllers\Api\Admin\RoleController::class)->middleware('permission:user.index|user.store|user.update|user.delete');
-        
+        // users
+        Route::apiResource('/users', UserController::class)->middleware('permission:users.index|users.store|users.update|users.delete');
+
+        Route::apiResource('/jurnal', JurnalController::class)->middleware('permission:jurnal.index|jurnal.updateStatus');
     });
 });
 
+Route::prefix('siswa')->group(function () {
 
-      
+    Route::group(['middleware' => ['auth:api', 'checkRole:4']], function () {
+
+        Route::apiResource('/pengajuan-pkl', PengajuanPKLController::class,)->middleware('permission:pengajuan.searchSiswa|pengajuan.store');
+
+    });
+});

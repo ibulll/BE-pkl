@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class User extends Model
 {
     use HasFactory, SoftDeletes;
+    
+    public function users()
+    {
+        return $this->hasMany(User::class, 'role_id');
+    }
 
     protected $fillable = [
         'name',
