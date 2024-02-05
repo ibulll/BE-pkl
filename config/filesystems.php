@@ -44,6 +44,8 @@ return [
             'throw' => false,
         ],
 
+        'attachment_path' => storage_path('app/public/attachments'),
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -54,6 +56,13 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+        ],
+
+        'pdfs' => [
+            'driver' => 'local',
+            'root' => public_path('pdfs'),
+            'url' => env('APP_URL').'/pdfs',
+            'visibility' => 'public',
         ],
 
     ],

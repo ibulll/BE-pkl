@@ -18,7 +18,7 @@ class DashboardController extends Controller
             $countSiswa = User::where('role_id', '4')->count();
 
             // Jumlah pembimbing
-            $countPembimbing = User::where('role_id', '2')->count();
+            $countPembimbing = User::where('role_id', '3')->count();
 
             return response()->json([
                 'countUsers' => $countUsers,

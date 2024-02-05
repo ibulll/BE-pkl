@@ -3,62 +3,62 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Models\Jurnal;
-use App\Models\User; // Make sure to import the User model
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class JurnalController extends Controller
 {
     public function index()
     {
         try {
-            // Fetch a specific user and their journal (replace 1 with the user's ID)
-            $user = User::find(1);
-            $jurnalForUser = $user ? $user->jurnal : null;
+            // Ambil semua data jurnal
+            $jurnals = Jurnal::all();
 
-            // Fetch all journals with user information
-            $jurnals = Jurnal::with('user')->get();
-
-            // Transform data before sending it as a response
-            $formattedJurnals = $jurnals->map(function ($jurnal) {
-                return [
-                    'id' => $jurnal->id,
-                    'user_name' => $jurnal->user ? $jurnal->user->name : 'Nama Tidak Tersedia',
-                    'status' => $jurnal->status,
-                    'kegiatan' => $jurnal->kegiatan,
-                    'tanggal' => $jurnal->tanggal,
-                    // Add other properties as needed
-                ];
-            });
-
-            return response()->json([
-                'user_jurnal' => [
-                    'user_name' => $user ? $user->name : 'Nama Tidak Tersedia',
-                    'jurnal' => $jurnalForUser,
-                ],
-                'all_jurnals' => $formattedJurnals,
-            ]);
+            return response()->json($jurnals, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error fetching jurnal data' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error fetching jurnal data.' . $e->getMessage()], 500);
         }
     }
 
-    // public function updateStatus(Request $request, $jurnalId)
-    // {
-    //     try {
-    //         // Validate the request data
-    //         $request->validate([
-    //             'status' => 'required|in:proses,selesai', // Assuming status can only be 'proses' or 'selesai'
-    //         ]);
+    public function getJurnalSiswa()
+    {
+        try {
+            // Ambil data siswa dengan role_id 4
+            $siswa = User::where('role_id', 4)->get(['id', 'name']);
 
-    //         // Update the status in the database
-    //         Jurnal::where('id', $jurnalId)->update([
-    //             'status' => $request->input('status'),
-    //         ]);
+            return response()->json($siswa, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching siswa data.' . $e->getMessage()], 500);
+        }
+    }
 
-    //         return response()->json(['message' => 'Status updated successfully']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'Error updating jurnal status: ' . $e->getMessage()], 500);
-    //     }
-    // }
+    public function getJurnalSiswaById($id)
+    {
+        try {
+            // Ambil data jurnal berdasarkan ID siswa
+            $jurnals = Jurnal::where('siswa_id', $id)->get();
+
+            // Ambil data siswa berdasarkan ID untuk informasi tambahan
+            try {
+                $userJurnal = User::findOrFail($id, ['id', 'name']);
+            } catch (ModelNotFoundException $exception) {
+                // Handle the case where the user is not found (provide a default response, log, etc.)
+                return response()->json(['error' => 'User not found.'], 404);
+            }
+
+            return response()->json([
+                'user_jurnal' => [
+                    'id' => $userJurnal->id,
+                    'name' => $userJurnal->name,
+                    'jurnal' => $jurnals,
+                ],
+                'all_jurnals' => $jurnals,
+                'pageCount' => 1, // Sesuaikan dengan logika paginasi Anda
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching jurnal data.' . $e->getMessage()], 500);
+        }
+    }
 }
