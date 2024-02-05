@@ -8,8 +8,10 @@ class UserStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
-    public function authorize(): bool
+    public function authorize()
     {
         return true;
     }
@@ -17,41 +19,34 @@ class UserStoreRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array
      */
-    public function rules(): array
+    public function rules()
     {
-        if ($this->isMethod('post')) {
-            return [
-                'name' => 'required|string|max:258',
-                'email' => 'required|string',
-                'password' => 'required|string'
-            ];
-        } elseif ($this->isMethod('put')) {
-            // For the PUT method, exclude the 'password' field
-            return [
-                'name' => 'required|string|max:258',
-                'email' => 'required|string',
-                // 'password' is excluded for the update operation
-            ];
-        }
+        return [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email' . $this->route('id'),
+            'role_id' => 'required|exists:roles,id',
+            'password' => 'nullable|string|min:6',
+            // Add validation rules for other fields
+        ];
     }
 
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array
+     */
     public function messages()
     {
-        if ($this->isMethod('post')) {
-            return [
-                'name.required' => 'Name is required!',
-                'email.required' => 'Email is required!',
-                'password.required' => 'Password is required!'
-            ];
-        } elseif ($this->isMethod('put')) {
-            // Adjust messages accordingly for the update operation
-            return [
-                'name.required' => 'Name is required!',
-                'email.required' => 'Email is required!',
-                // No password message for the update operation
-            ];
-        }
+        return [
+            'name.required' => 'Name is required!',
+            'email.required' => 'Email is required!',
+            'email.email' => 'Email must be a valid email address!',
+            'role_id.required' => 'Role is required!',
+            'role_id.exists' => 'Selected role does not exist!',
+            'password.min' => 'Password must be at least 6 characters!',
+            // Add other messages for validation rules
+        ];
     }
 }
