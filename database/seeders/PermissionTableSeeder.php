@@ -23,7 +23,11 @@ class PermissionTableSeeder extends Seeder
 
     protected $permissionSiswa = [
         'pengajuan.index',
-        'pengajuan.store'
+        'pengajuan.store',
+        'jurnal.index',
+        'jurnal.store',
+        'jurnal.edit',
+        'jurnal.destroy'
     ];
 
     /**
@@ -49,6 +53,10 @@ class PermissionTableSeeder extends Seeder
         //permissions siswa
         Permission::firstOrcreate(['name' => 'pengajuan.index', 'guard_name' => 'api']);
         Permission::firstOrcreate(['name' => 'pengajuan.store', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'jurnal.index', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'jurnal.store', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'jurnal.edit', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'jurnal.destroy', 'guard_name' => 'api']);
 
         
         // Assign permissions to roles
@@ -64,3 +72,4 @@ class PermissionTableSeeder extends Seeder
         }
     }
 }
+

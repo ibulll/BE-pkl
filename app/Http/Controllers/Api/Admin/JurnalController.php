@@ -38,7 +38,7 @@ class JurnalController extends Controller
     {
         try {
             // Ambil data jurnal berdasarkan ID siswa
-            $jurnals = Jurnal::where('siswa_id', $id)->get();
+            $jurnals = Jurnal::where('user_id', $id)->get();
 
             // Ambil data siswa berdasarkan ID untuk informasi tambahan
             try {

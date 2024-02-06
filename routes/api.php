@@ -1,7 +1,9 @@
 <?php
 
+use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GetEmailController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\Api\Admin\EmailController;
 use App\Http\Controllers\APi\Admin\JurnalController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\PermissionController;
+use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
 use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
@@ -62,6 +65,8 @@ Route::prefix('admin')->group(function () {
         Route::put('/update-status/{nama}', [PengajuanSiswaController::class, 'updateStatus']);
 
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
+
+        Route::get('/admin/get-emails', [GetEmailController::class, 'getEmails']);
     });
 });
 
@@ -73,6 +78,6 @@ Route::prefix('siswa')->group(function () {
 
         Route::get('/dashboard', [DashboardSiswaController::class, 'getDaftarAkunSiswa']);
 
-
+        Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.edit|jurnal.destroy|jurnal.show');
     });
 });
