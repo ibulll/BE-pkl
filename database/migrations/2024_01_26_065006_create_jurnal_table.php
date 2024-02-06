@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->enum('status', ['proses', 'selesai'] );
             $table->text('kegiatan');
+            $table->time('waktu');
             $table->date('tanggal');
             $table->timestamps();
         });

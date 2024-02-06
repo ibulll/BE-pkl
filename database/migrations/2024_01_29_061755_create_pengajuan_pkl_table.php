@@ -16,15 +16,14 @@ class CreatePengajuanPklTable extends Migration
         Schema::create('pengajuan_pkl', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('nis');
+            $table->string('nisn')->nullable();
             $table->string('cv');
             $table->string('portofolio');
             $table->string('email');
             $table->text('alamat');
             $table->binary('file_cv')->nullable();
             $table->binary('file_portofolio')->nullable();
-            $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak'])
-            ->default('Diperiksa');
+            $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak']);
             $table->timestamps();
         });
     }

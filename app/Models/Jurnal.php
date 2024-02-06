@@ -10,10 +10,16 @@ class Jurnal extends Model
     use HasFactory;
 
     protected $table = 'jurnal';
-    protected $fillable = ['user_id'];
+    protected $fillable = ['user_id', 'kegiatan', 'status', 'waktu', 'tanggal'];
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function pengajuanPKL()
+    {
+        return $this->belongsTo(PengajuanPKL::class, 'nisn', 'nisn');
+    }
+
 }
