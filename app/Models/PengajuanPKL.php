@@ -14,7 +14,7 @@ class PengajuanPKL extends Model
 
     protected $fillable = [
         'nama',
-        'nis',
+        'nisn',
         'cv',
         'portofolio',
         'email',
@@ -22,6 +22,11 @@ class PengajuanPKL extends Model
         'file_cv',
         'file_portofolio',
     ];
+
+    public function jurnals()
+{
+    return $this->hasMany(Jurnal::class, 'nisn', 'nisn');
+}
 
     public function getCvUrlAttribute()
     {

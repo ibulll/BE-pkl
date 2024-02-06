@@ -16,7 +16,7 @@ class CreatePengajuanPklTable extends Migration
         Schema::create('pengajuan_pkl', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('nis');
+            $table->string('nisn')->nullable();
             $table->string('cv');
             $table->string('portofolio');
             $table->string('email');

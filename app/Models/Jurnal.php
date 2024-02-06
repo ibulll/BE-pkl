@@ -16,4 +16,10 @@ class Jurnal extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function pengajuanPKL()
+    {
+        return $this->belongsTo(PengajuanPKL::class, 'nisn', 'nisn');
+    }
+
 }
