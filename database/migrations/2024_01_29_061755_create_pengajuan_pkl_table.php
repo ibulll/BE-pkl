@@ -21,8 +21,10 @@ class CreatePengajuanPklTable extends Migration
             $table->string('portofolio');
             $table->string('email');
             $table->text('alamat');
-            $table->string('file_cv');
-            $table->string('file_portofolio');
+            $table->binary('file_cv')->nullable();
+            $table->binary('file_portofolio')->nullable();
+            $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak'])
+            ->default('Diperiksa');
             $table->timestamps();
         });
     }

@@ -22,7 +22,7 @@ class PermissionTableSeeder extends Seeder
     ];
 
     protected $permissionSiswa = [
-        'pengajuan.searchSiswa',
+        'pengajuan.index',
         'pengajuan.store'
     ];
 
@@ -32,21 +32,23 @@ class PermissionTableSeeder extends Seeder
     public function run()
     {
         //permissions admin
-        Permission::Create(['name' => 'users.index', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'users.store', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'users.update', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'users.delete', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'users.index', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'users.store', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'users.update', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'users.delete', 'guard_name' => 'api']);
 
-        Permission::Create(['name' => 'permissions.index', 'guard_name' => 'api']); 
+        Permission::firstOrCreate(['name' => 'permissions.index', 'guard_name' => 'api']); 
 
-        Permission::Create(['name' => 'roles.index', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'roles.create', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'roles.edit', 'guard_name' => 'api']);
-        Permission::Create(['name' => 'roles.delete', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'roles.index', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'roles.create', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'roles.edit', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'roles.delete', 'guard_name' => 'api']);
+
+        Permission::firstOrCreate(['name' => 'pengajuan.updateStatus', 'guard_name' => 'api']);
 
         //permissions siswa
-        Permission::create(['name' => 'pengajuan.searchSiswa', 'guard_name' => 'api']);
-        Permission::create(['name' => 'pengajuan.store', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'pengajuan.index', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'pengajuan.store', 'guard_name' => 'api']);
 
         
         // Assign permissions to roles

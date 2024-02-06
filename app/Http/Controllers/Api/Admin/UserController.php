@@ -5,17 +5,57 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\UserStoreRequest;
+use Illuminate\Support\Facades\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('role')->get();
+        try {
+            $searchTerm = request('searchTerm');
+            $roleCategory = request('roleCategory');
 
-        return response()->json([
-            'users' => $users,
-        ], 200);
+
+
+            $query = User::with('role');
+
+            // Apply search by name
+            if ($searchTerm) {
+                $query->where('name', 'like', '%' . $searchTerm . '%');
+            }
+
+            // Apply filtering by role category
+            if ($roleCategory) {
+                $query->whereHas('role', function ($q) use ($roleCategory) {
+                    $q->where('name', $roleCategory);
+                });
+            }
+
+            $users = $query->get();
+
+            return response()->json(['users' => $users], 200);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => 'Error fetching users'], 500);
+        }
+    }
+
+    public function getUsersByRoleId(Request $request)
+    {
+        try {
+            $role_id = $request->input('role_id');
+
+            if (!$role_id) {
+                return response()->json(['message' => 'Role ID is required'], 400);
+            }
+
+            $users = User::with('role')->where('role_id', $role_id)->get();
+
+            return response()->json(['users' => $users], 200);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => 'Error fetching users by role ID'], 500);
+        }
     }
 
     public function store(UserStoreRequest $request)
@@ -27,16 +67,16 @@ class UserController extends Controller
                 'password' => 'required|string|min:6',
                 'role' => 'required|string|in:admin,kaprog,pembimbing,siswa',
             ]);
-    
+
             // Menetapkan peran
             $role = Role::where('name', $request->input('role'))->first();
-    
+
             if (!$role) {
                 return response()->json([
                     'message' => 'Peran yang diberikan tidak valid.',
                 ], 422);
             }
-    
+
             // Membuat User
             $user = User::create([
                 'name' => $request->input('name'),
@@ -44,20 +84,20 @@ class UserController extends Controller
                 'password' => bcrypt($request->input('password')),
                 'role_id' => $role->id,
             ]);
-    
+
             // Menetapkan peran menggunakan Spatie Laravel Permission (sesuaikan dengan package yang Anda gunakan)
             $user->assignRole($request->input('role'));
-    
+
             // Menyegarkan data pengguna untuk mendapatkan data yang diperbarui, termasuk peran
             $user = $user->fresh();
-    
+
             if (!$user->role) {
                 // Handle jika peran tidak terhubung dengan pengguna
                 return response()->json([
                     'message' => 'Gagal menetapkan peran untuk pengguna.',
                 ], 500);
             }
-    
+
             return response()->json([
                 'user' => $user,
                 'message' => 'Pengguna berhasil dibuat.',
@@ -68,7 +108,7 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
+
 
 
     public function show($id)
@@ -88,42 +128,37 @@ class UserController extends Controller
     }
 
     public function update(UserStoreRequest $request, $id)
-{
-    try {
-        // Find User
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json([
-                'message' => 'User Not Found.'
-            ], 404);
+    {
+        try {
+            $validatedData = $request->validated();
+            $user = User::findOrFail($id);
+
+            // Update user data
+            $user->update([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+            ]);
+
+            // Optionally, update the password if provided
+            if ($request->filled('password')) {
+                $user->update(['password' => Hash::make($request->input('password'))]);
+            }
+
+            // Update user roles
+            $roleIds = [$validatedData['role_id']]; // Role baru yang diinput dari form
+
+            // Hapus peran lama dan tambahkan peran baru
+            $user->syncRoles($roleIds);
+
+            $user->role_id = $validatedData['role_id'];
+            $user->save();
+
+            return response()->json(['message' => 'User updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error updating user'], 500);
         }
-
-        // Update User
-        $user->name = $request->name;
-        $user->email = $request->email;
-
-        // Find or create role based on the input role name
-        $role = Role::firstOrCreate(['name' => $request->role]);
-
-        // Set the role_id for the user
-        $user->role_id = $role->id;
-
-        // Save the changes
-        $user->save();
-
-        // Return Json Response
-        return response()->json([
-            'message' => "User successfully updated."
-        ], 200);
-    } catch (\Exception $e) {
-        // Return Json Response with detailed error message
-        return response()->json([
-            'message' => "Something went really wrong! Error: " . $e->getMessage(),
-        ], 500);
     }
-}
 
-    
 
     public function destroy($id)
     {
