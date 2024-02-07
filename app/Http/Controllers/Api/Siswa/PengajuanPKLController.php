@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UserStoreRequest;
 use Illuminate\Support\Facades\Validator;
 
@@ -43,7 +44,7 @@ public function store(Request $request)
         // Validate incoming request data
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
-            'nis' => 'required|string',
+            'nisn' => 'required|string',
             'cv' => 'string',
             'portofolio' => 'string',
             'email' => 'required|email',
@@ -55,11 +56,12 @@ public function store(Request $request)
           // Fill the PengajuanPKL instance with the request data
           $pengajuan = new PengajuanPKL();
           $pengajuan->nama = $request->input('nama');
-          $pengajuan->nis = $request->input('nis');
+          $pengajuan->nisn = $request->input('nisn');
           $pengajuan->cv = $request->input('cv');
           $pengajuan->portofolio = $request->input('portofolio');
           $pengajuan->email = $request->input('email');
           $pengajuan->alamat = $request->input('alamat');
+          $pengajuan->user_id = Auth::id();
 
         // Check if 'fileCV' is present and valid
         if ($request->hasFile('file_cv') && $request->file('file_cv')->isValid()) {

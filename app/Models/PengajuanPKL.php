@@ -13,6 +13,7 @@ class PengajuanPKL extends Model
     protected $table = 'pengajuan_pkl';
 
     protected $fillable = [
+        'user_id', 
         'nama',
         'nisn',
         'cv',

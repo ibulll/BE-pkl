@@ -26,7 +26,8 @@ class Absensi extends Model
 
     public function pengajuanPKL()
     {
-        return $this->belongsTo(PengajuanPKL::class, 'user_id');
+        return $this->belongsTo(PengajuanPKL::class, 'user_id','nisn');
+        
     }
 
 }

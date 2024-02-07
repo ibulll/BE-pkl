@@ -15,6 +15,7 @@ class CreatePengajuanPklTable extends Migration
     {
         Schema::create('pengajuan_pkl', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id'); // Menambahkan kolom user_id
             $table->string('nama');
             $table->string('nisn')->nullable();
             $table->string('cv');
@@ -25,6 +26,9 @@ class CreatePengajuanPklTable extends Migration
             $table->binary('file_portofolio')->nullable();
             $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak']);
             $table->timestamps();
+
+            // Menambahkan indeks untuk kolom user_id
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
 use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
+use App\Http\Controllers\Api\Admin\AbsenSiswaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +70,12 @@ Route::prefix('admin')->group(function () {
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
         Route::get('/admin/get-emails', [GetEmailController::class, 'getEmails']);
+
+        Route::get('/absensi/{userId}', [AbsensiController::class, 'show']);
+    
+        Route::get('/absensi', [AbsenSiswaController::class, 'show']);
+
+
     });
 });
 
@@ -82,8 +89,9 @@ Route::prefix('siswa')->group(function () {
 
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
 
-        Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.edit|jurnal.destroy|jurnal.show');
+        Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.update|jurnal.destroy|jurnal.show');
 
         Route::post('/absen', [AbsensiController::class, 'store']);
+
     });
 });
