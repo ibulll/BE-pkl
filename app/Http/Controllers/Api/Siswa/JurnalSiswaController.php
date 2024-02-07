@@ -10,11 +10,21 @@ use Illuminate\Support\Facades\Auth;
 class JurnalSiswaController extends Controller
 {
 
-    public function index()
-    {
-        $journals = Jurnal::all();
-        return response()->json($journals);
+    public function index(Request $request)
+{
+    try {
+
+        $userId = Auth::id();
+
+        // Ambil semua data jurnal yang terkait dengan user_id
+        $journals = Jurnal::where('user_id', $userId)->get();
+
+        return response()->json($journals, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error fetching jurnal data.' . $e->getMessage()], 500);
     }
+}
+
 
     public function update(Request $request, $id)
 {
