@@ -26,7 +26,7 @@ class PermissionTableSeeder extends Seeder
         'pengajuan.store',
         'jurnal.index',
         'jurnal.store',
-        'jurnal.edit',
+        'jurnal.update',
         'jurnal.destroy'
     ];
 
@@ -55,7 +55,7 @@ class PermissionTableSeeder extends Seeder
         Permission::firstOrcreate(['name' => 'pengajuan.store', 'guard_name' => 'api']);
         Permission::firstOrcreate(['name' => 'jurnal.index', 'guard_name' => 'api']);
         Permission::firstOrcreate(['name' => 'jurnal.store', 'guard_name' => 'api']);
-        Permission::firstOrcreate(['name' => 'jurnal.edit', 'guard_name' => 'api']);
+        Permission::firstOrcreate(['name' => 'jurnal.update', 'guard_name' => 'api']);
         Permission::firstOrcreate(['name' => 'jurnal.destroy', 'guard_name' => 'api']);
 
         

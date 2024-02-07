@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\GetEmailController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
@@ -39,7 +41,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 /// group route with prefix "admin"
 Route::prefix('admin')->group(function () {
     // group route with middleware "auth:api" and "checkRole:admin"
-    Route::group(['middleware' => ['auth:api', 'checkRole:1']], function () {
+    Route::group(['middleware' => ['auth:api']], function () {
         // dashboard
         Route::get('/dashboard/count-data', [DashboardController::class, 'getCountData']);
 
@@ -72,7 +74,7 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('siswa')->group(function () {
 
-    Route::group(['middleware' => ['auth:api', 'checkRole:4']], function () {
+    Route::group(['middleware' => ['auth:api']], function () {
 
         Route::apiResource('/pengajuan-pkl', PengajuanPKLController::class)->middleware('permission:pengajuan.index|pengajuan.store');
 
@@ -81,5 +83,7 @@ Route::prefix('siswa')->group(function () {
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
 
         Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.edit|jurnal.destroy|jurnal.show');
+
+        Route::post('/absen', [AbsensiController::class, 'store']);
     });
 });

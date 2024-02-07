@@ -16,15 +16,20 @@ class JurnalSiswaController extends Controller
         return response()->json($journals);
     }
 
-    public function edit($id)
-    {
-        $journal = Jurnal::find($id);
-        if (!$journal) {
-            return response()->json(['message' => 'Journal not found'], 404);
-        }
-
-        return response()->json($journal);
+    public function update(Request $request, $id)
+{
+    $journal = Jurnal::find($id);
+    if (!$journal) {
+        return response()->json(['message' => 'Journal not found'], 404);
     }
+
+    // Update the journal entry with data from the request
+    $journal->update($request->all());
+
+    // Return a success response
+    return response()->json(['message' => 'Journal updated successfully']);
+}
+
 
     public function show($id)
     {

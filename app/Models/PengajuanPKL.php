@@ -21,21 +21,11 @@ class PengajuanPKL extends Model
         'alamat',
         'file_cv',
         'file_portofolio',
+        'status'
     ];
 
-    public function jurnals()
-{
-    return $this->hasMany(Jurnal::class, 'nisn', 'nisn');
-}
-
-    public function getCvUrlAttribute()
+    public function absensi()
     {
-        return $this->file_cv ? Storage::url($this->file_cv) : null;
+        return $this->hasMany(Absensi::class, 'user_id');
     }
-    
-    public function getPortofolioUrlAttribute()
-    {
-        return $this->file_portofolio ? Storage::url($this->file_portofolio) : null;
-    }
-    
 }
