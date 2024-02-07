@@ -78,6 +78,8 @@ Route::prefix('siswa')->group(function () {
 
         Route::get('/dashboard', [DashboardSiswaController::class, 'getDaftarAkunSiswa']);
 
+        Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
+
         Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.edit|jurnal.destroy|jurnal.show');
     });
 });
