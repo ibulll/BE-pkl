@@ -75,7 +75,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/absensi/{id}', [AbsenSiswaController::class, 'show']);
 
-        Route::get('/photos/{filename}',[AbsenSiswaController::class, 'show']);
+        Route::get('/photos/{filename}',[AbsenSiswaController::class, ]);
         
     });
 });

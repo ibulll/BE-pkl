@@ -38,55 +38,64 @@ class PengajuanPKLController extends Controller
     
 
 
-public function store(Request $request)
-{
-    try {
-        // Validate incoming request data
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required|string',
-            'nisn' => 'required|string',
-            'cv' => 'string',
-            'portofolio' => 'string',
-            'email' => 'required|email',
-            'alamat' => 'required|string',
-            'file_cv' => 'file|required|mimes:pdf',
-            'file_portofolio' => 'file|required|mimes:pdf',
-        ]);
-
-          // Fill the PengajuanPKL instance with the request data
-          $pengajuan = new PengajuanPKL();
-          $pengajuan->nama = $request->input('nama');
-          $pengajuan->nisn = $request->input('nisn');
-          $pengajuan->cv = $request->input('cv');
-          $pengajuan->portofolio = $request->input('portofolio');
-          $pengajuan->email = $request->input('email');
-          $pengajuan->alamat = $request->input('alamat');
-          $pengajuan->user_id = Auth::id();
-
-        // Check if 'fileCV' is present and valid
-        if ($request->hasFile('file_cv') && $request->file('file_cv')->isValid()) {
-            // Store the uploaded 'fileCV'
-            $pengajuan->file_cv = $request->file('file_cv')->store('cv_files', 'public');
-        } else {
-            // Handle the case where 'fileCV' is missing or not valid
-            return response()->json(['error' => 'Invalid or missing fileCV'], 400);
+    public function store(Request $request)
+    {
+        try {
+            // Validate incoming request data
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required|string',
+                'nisn' => 'required|string',
+                'cv' => 'string',
+                'portofolio' => 'string',
+                'email' => 'required|email',
+                'alamat' => 'required|string',
+                'file_cv' => 'file|required|mimes:pdf',
+                'file_portofolio' => 'file|required|mimes:pdf',
+            ]);
+    
+            // Fill the PengajuanPKL instance with the request data
+            $pengajuan = new PengajuanPKL();
+            $pengajuan->nama = $request->input('nama');
+            $pengajuan->nisn = $request->input('nisn');
+            $pengajuan->cv = $request->input('cv');
+            $pengajuan->portofolio = $request->input('portofolio');
+            $pengajuan->email = $request->input('email');
+            $pengajuan->alamat = $request->input('alamat');
+    
+            // Ambil user_id teman berdasarkan nama yang dipilih
+            $user = User::where('name', $request->input('nama'))->first();
+            if (!$user) {
+                return response()->json(['error' => 'User teman tidak ditemukan'], 404);
+            }
+    
+            // Simpan user_id teman dalam pengajuan PKL
+            $pengajuan->user_id = $user->id;
+    
+            // Check if 'fileCV' is present and valid
+            if ($request->hasFile('file_cv') && $request->file('file_cv')->isValid()) {
+                // Store the uploaded 'fileCV'
+                $pengajuan->file_cv = $request->file('file_cv')->store('cv_files', 'public');
+            } else {
+                // Handle the case where 'fileCV' is missing or not valid
+                return response()->json(['error' => 'Invalid or missing fileCV'], 400);
+            }
+    
+            // Check if 'filePortofolio' is present and valid
+            if ($request->hasFile('file_portofolio') && $request->file('file_portofolio')->isValid()) {
+                // Store the uploaded 'filePortofolio'
+                $pengajuan->file_portofolio = $request->file('file_portofolio')->store('portofolio_files', 'public');
+            } else {
+                // Handle the case where 'filePortofolio' is missing or not valid
+                return response()->json(['error' => 'Invalid or missing filePortofolio'], 400);
+            }
+    
+            // Save the PengajuanPKL instance to the database
+            $pengajuan->save();
+    
+            return response()->json(['message' => 'Pengajuan PKL berhasil disimpan'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error storing Pengajuan PKL: ' . $e->getMessage()], 500);
         }
-
-        // Check if 'filePortofolio' is present and valid
-        if ($request->hasFile('file_portofolio') && $request->file('file_portofolio')->isValid()) {
-            // Store the uploaded 'filePortofolio'
-            $pengajuan->file_portofolio = $request->file('file_portofolio')->store('portofolio_files', 'public');
-        } else {
-            // Handle the case where 'filePortofolio' is missing or not valid
-            return response()->json(['error' => 'Invalid or missing filePortofolio'], 400);
-        }
-
-        // Save the PengajuanPKL instance to the database
-        $pengajuan->save();
-
-        return response()->json(['message' => 'Pengajuan PKL berhasil disimpan'], 201);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error storing Pengajuan PKL: ' . $e->getMessage()], 500);
     }
-}
+    
 }
