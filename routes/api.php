@@ -70,12 +70,13 @@ Route::prefix('admin')->group(function () {
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
         Route::get('/admin/get-emails', [GetEmailController::class, 'getEmails']);
-
-        Route::get('/absensi/{userId}', [AbsensiController::class, 'show']);
     
-        Route::get('/absensi', [AbsenSiswaController::class, 'show']);
+        Route::get('/absensi', [AbsenSiswaController::class, 'index']);
 
+        Route::get('/absensi/{id}', [AbsenSiswaController::class, 'show']);
 
+        Route::get('/photos/{filename}',[AbsenSiswaController::class, 'show']);
+        
     });
 });
 

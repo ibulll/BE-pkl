@@ -18,6 +18,7 @@ class Absensi extends Model
     protected $fillable = [
         'latitude',
         'longitude',
+        'user_id',
         'nama',
         'nisn',
         'foto',
@@ -26,8 +27,12 @@ class Absensi extends Model
 
     public function pengajuanPKL()
     {
-        return $this->belongsTo(PengajuanPKL::class, 'user_id','nisn');
+        return $this->belongsTo(PengajuanPKL::class, 'user_id','nisn', 'nama');
         
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
 }
