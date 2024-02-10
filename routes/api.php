@@ -65,18 +65,21 @@ Route::prefix('admin')->group(function () {
         //pengajuansiswa
         Route::get('/pengajuan/all', [PengajuanSiswaController::class, 'getAllPengajuan']);
 
-        Route::put('/update-status/{nama}', [PengajuanSiswaController::class, 'updateStatus']);
+        Route::put('/update-status/{id}', [PengajuanSiswaController::class, 'updateStatus']);
 
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
         Route::get('/admin/get-emails', [GetEmailController::class, 'getEmails']);
-    
+
         Route::get('/absensi', [AbsenSiswaController::class, 'index']);
 
         Route::get('/absensi/{id}', [AbsenSiswaController::class, 'show']);
 
-        Route::get('/photos/{filename}',[AbsenSiswaController::class, ]);
-        
+        Route::get('/photos/{filename}', [AbsenSiswaController::class,]);
+
+        Route::get('pengajuan-pkl/{id}/view-cv', [PengajuanSiswaController::class, 'viewCV']);
+
+        Route::get('pengajuan-pkl/{id}/view-portofolio', [PengajuanSiswaController::class, 'viewPortofolio']);
     });
 });
 
@@ -93,6 +96,5 @@ Route::prefix('siswa')->group(function () {
         Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.update|jurnal.destroy|jurnal.show');
 
         Route::post('/absen', [AbsensiController::class, 'store']);
-
     });
 });
