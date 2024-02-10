@@ -36,20 +36,13 @@ return [
             'throw' => false,
         ],
 
-        'photos' => [
-            'driver' => 'local',
-            'root' => storage_path('app/photos'),
-            'url' => env('APP_URL').'/storage/photos',
-            'visibility' => 'public',
-        ],
-
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => public_path('storage'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
-            'throw' => false,
         ],
+        
 
         'attachment_path' => storage_path('app/public/attachments'),
 
@@ -68,7 +61,7 @@ return [
         'pdfs' => [
             'driver' => 'local',
             'root' => public_path('pdfs'),
-            'url' => env('APP_URL').'/pdfs',
+            'url' => env('APP_URL') . '/pdfs',
             'visibility' => 'public',
         ],
 
