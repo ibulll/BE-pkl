@@ -60,7 +60,8 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('/jurnal', JurnalController::class)->middleware('permission:jurnal.index|jurnal.updateStatus');
 
         Route::get('/jurnal-siswa', [JurnalController::class, 'getJurnalSiswa']);
-        Route::get('/jurnal-siswa/{id}', [JurnalController::class, 'getJurnalSiswaById']);
+        Route::get('/jurnal-siswa/{id}', [JurnalController::class, 'getJurnalSiswa']);
+
 
         //pengajuansiswa
         Route::get('/pengajuan/all', [PengajuanSiswaController::class, 'getAllPengajuan']);

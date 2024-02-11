@@ -31,36 +31,31 @@ class AbsenSiswaController extends Controller
 
     public function show($id)
     {
-        // Cek apakah pengguna yang sedang masuk memiliki akses ke siswa yang diminta
-        $user = Auth::user();
-        if ($user->role_id !== 4) { // Jika bukan siswa, kembalikan pesan error
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        // Ambil data absensi berdasarkan nama atau ID
-        $absensiList = Absensi::where('nama', $id)->orWhere('id', $id)->get();
-
+        // Ambil data absensi berdasarkan user_id
+        $absensiList = Absensi::where('user_id', $id)->get();
+    
         // Jika data absensi tidak ditemukan, kembalikan respons kesalahan
         if ($absensiList->isEmpty()) {
-            return response()->json(['message' => 'Data absensi tidak ditemukan untuk siswa dengan nama atau ID ' . $id], 404);
+            return response()->json(['message' => 'Data absensi tidak ditemukan untuk siswa dengan ID ' . $id], 404);
         }
-
-        // Mendapatkan data siswa terkait dari data absensi pertama yang ditemukan
+    
+        // Mengambil data siswa terkait dari data absensi pertama yang ditemukan
         $absensiPertama = $absensiList->first();
-        $siswaId = $absensiPertama->id;
-
+        $siswaId = $absensiPertama->user_id;
+    
         // Mengambil data siswa terkait berdasarkan ID siswa yang ditemukan
-        $siswa = User::find($siswaId); // Menggunakan model User karena Anda ingin mengambil data siswa dari tabel User
-
+        $siswa = User::find($siswaId);
+    
         // Mendapatkan data foto dan lokasi absensi
         $absensiData = $absensiList->map(function ($absensi) {
             return [
+                'tanggal_absen' => $absensi->created_at->toDateString(),
                 'latitude' => $absensi->latitude,
                 'longitude' => $absensi->longitude,
                 'foto' => trim(Storage::url($absensi->foto), '\\'), // Menghapus backslash dari URL
             ];
         });
-
+    
         // Kembalikan data absensi beserta data siswa jika diperlukan
         return response()->json(['siswa' => $siswa, 'absensiList' => $absensiData]);
     }
