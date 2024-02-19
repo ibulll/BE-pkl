@@ -17,14 +17,20 @@ class CreatePengajuanPklTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id'); // Menambahkan kolom user_id
             $table->string('nama');
-            $table->string('nisn')->nullable();
-            $table->string('cv');
-            $table->string('portofolio');
-            $table->string('email');
-            $table->text('alamat');
+            $table->string('nisn');
+            $table->enum('kelas', ['XII PPLG 1', 'XII PPLG 2', 'XII PPLG 3']);
+            $table->string('cv')->nullable();
+            $table->string('portofolio')->nullable();
+            $table->string('nama_perusahaan')->nullable();
+            $table->string('email_perusahaan')->nullable();
+            $table->string('alamat_perusahaan')->nullable();
+            $table->unsignedBigInteger('perusahaan_id')->nullable();
+            $table->foreign('perusahaan_id')->references('id')->on('perusahaan');
             $table->binary('file_cv')->nullable();
             $table->binary('file_portofolio')->nullable();
             $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak']);
+            $table->string('group_id');
+            $table->foreign('group_id')->references('group_id')->on('pembimbing')->onDelete('cascade');
             $table->timestamps();
 
             // Menambahkan indeks untuk kolom user_id

@@ -18,6 +18,7 @@ class AbsensiController extends Controller
             'latitude' => 'required',
             'longitude' => 'required',
             'foto' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'waktu_absen' => 'required',
             'tanggal_absen' => 'required|date' // Validasi tanggal absen
         ]);
 
@@ -35,6 +36,7 @@ class AbsensiController extends Controller
         // Ambil NISN dan nama dari pengajuan PKL
         $nisn = $pengajuanPkl->nisn;
         $nama = $pengajuanPkl->nama;
+    
         
         // Dapatkan tanggal absen dari permintaan
         $tanggal_absen = $request->tanggal_absen;
@@ -45,6 +47,7 @@ class AbsensiController extends Controller
         $absensi->nisn = $nisn;
         $absensi->tanggal_absen = $tanggal_absen; // Simpan tanggal absen
         $absensi->latitude = $request->latitude;
+        $absensi->waktu_absen = $request->waktu_absen;
         $absensi->longitude = $request->longitude;
         $absensi->foto = $fotoPath; // Simpan path foto ke database
         $absensi->user_id = Auth::id();
@@ -57,4 +60,19 @@ class AbsensiController extends Controller
         return response()->json(['message' => 'Absensi berhasil disimpan', 'foto_url' => $fotoUrl], 201);
     }
 
+    public function list()
+{
+    // Ambil daftar absensi yang telah disimpan
+    $absensiList = Absensi::where('user_id', Auth::id())->get();
+
+    // Mendapatkan URL untuk setiap foto absensi
+    $absensiListWithUrl = $absensiList->map(function ($absensi) {
+        $absensi->foto_url = Storage::url($absensi->foto);
+        return $absensi;
+    });
+
+    return response()->json($absensiListWithUrl);
 }
+
+}
+

@@ -17,12 +17,14 @@ class AbsenSiswaController extends Controller
         // Ambil daftar siswa yang memiliki akses ke absensi
         $siswaList = User::where('role_id', 4)->get(['id', 'name']);
 
-        // Ambil NISN dari tabel PengajuanPKL
+        // Ambil NISN dan kelas dari tabel PengajuanPKL
         $nisnData = PengajuanPKL::whereIn('user_id', $siswaList->pluck('id'))->pluck('nisn', 'user_id');
-        
+        $kelasData = PengajuanPKL::whereIn('user_id', $siswaList->pluck('id'))->pluck('kelas', 'user_id');
+
         // Gabungkan NISN dengan data siswa
-        $siswaList->transform(function ($user) use ($nisnData) {
+        $siswaList->transform(function ($user) use ($nisnData, $kelasData) {
             $user->nisn = $nisnData[$user->id] ?? null;
+            $user->kelas = $kelasData[$user->id] ?? null;
             return $user;
         });
 
@@ -31,32 +33,36 @@ class AbsenSiswaController extends Controller
 
     public function show($id)
     {
-        // Ambil data absensi berdasarkan user_id
+        // Ambil semua data absensi berdasarkan user_id
         $absensiList = Absensi::where('user_id', $id)->get();
-    
-        // Jika data absensi tidak ditemukan, kembalikan respons kesalahan
+
+        // Jika tidak ada data absensi ditemukan, kembalikan respons kesalahan
         if ($absensiList->isEmpty()) {
             return response()->json(['message' => 'Data absensi tidak ditemukan untuk siswa dengan ID ' . $id], 404);
         }
-    
-        // Mengambil data siswa terkait dari data absensi pertama yang ditemukan
-        $absensiPertama = $absensiList->first();
-        $siswaId = $absensiPertama->user_id;
-    
-        // Mengambil data siswa terkait berdasarkan ID siswa yang ditemukan
-        $siswa = User::find($siswaId);
-    
-        // Mendapatkan data foto dan lokasi absensi
-        $absensiData = $absensiList->map(function ($absensi) {
-            return [
+
+        // Mengambil data siswa terkait dari absensi pertama
+        $siswa = $absensiList->first()->user;
+
+        // Menginisialisasi array untuk menyimpan data absensi
+        $formattedAbsensiList = [];
+
+        // Mengiterasi melalui setiap data absensi dan menyimpannya dalam array yang diformat
+        foreach ($absensiList as $absensi) {
+            $absensiData = [
                 'tanggal_absen' => $absensi->created_at->toDateString(),
+                'waktu_absen' => $absensi->created_at->toTimeString(), // Mengubah menjadi toTimeString()
                 'latitude' => $absensi->latitude,
                 'longitude' => $absensi->longitude,
                 'foto' => trim(Storage::url($absensi->foto), '\\'), // Menghapus backslash dari URL
             ];
-        });
-    
-        // Kembalikan data absensi beserta data siswa jika diperlukan
-        return response()->json(['siswa' => $siswa, 'absensiList' => $absensiData]);
+
+            $formattedAbsensiList[] = $absensiData;
+        }
+
+        // Kembalikan data absensi beserta data siswa
+        return response()->json(['siswa' => $siswa, 'absensiList' => $formattedAbsensiList]);
     }
+
+
 }

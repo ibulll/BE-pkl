@@ -16,17 +16,31 @@ class PengajuanPKL extends Model
         'user_id', 
         'nama',
         'nisn',
+        'kelas',
         'cv',
         'portofolio',
-        'email',
-        'alamat',
+        'nama_perusahaan',
+        'email_perusahaan',
+        'alamat_perusahaan',
         'file_cv',
         'file_portofolio',
+        'group_id',
+        'perusahaan_id',
         'status'
     ];
 
     public function absensi()
     {
         return $this->hasMany(Absensi::class, 'user_id');
+    }
+
+    public function perusahaan()
+    {
+        return $this->belongsTo(Perusahaan::class);
+    }
+
+    public function pembimbing()
+    {
+        return $this->belongsToMany(Pembimbing::class, 'group_id');
     }
 }

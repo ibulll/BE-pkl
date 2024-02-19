@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;;
+use App\Http\Controllers\Controller;
+;
+use Illuminate\Support\Facades\Storage;
 
 class PengajuanSiswaController extends Controller
 {
@@ -58,28 +60,71 @@ class PengajuanSiswaController extends Controller
                 return response()->json(['error' => 'Pengajuan PKL tidak ditemukan'], 404);
             }
 
-            // Kembalikan URL CV
-            return response()->json(['cv_url' => asset('storage/' . $pengajuan->file_cv)]);
+            // Path ke file CV di storage
+            $cvPath = storage_path('app/public/' . $pengajuan->cv_file);
+
+            // Periksa apakah file CV ada
+            if (!Storage::exists($cvPath)) {
+                return response()->json(['error' => 'File CV tidak ditemukan'], 404);
+            }
+
+            // Ambil konten file CV
+            $cvContent = Storage::get($cvPath);
+
+            // Set header untuk menampilkan CV di browser
+            return response($cvContent)
+                ->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error viewing CV: ' . $e->getMessage()], 500);
         }
     }
 
-    public function viewPortofolio($id)
+    public function viewPortofolio($filename)
     {
         try {
-            // Cari pengajuan PKL berdasarkan ID
-            $pengajuan = PengajuanPKL::find($id);
+            // Path ke file portofolio di storage
+            $portofolioPath = 'file_portofolio/' . $filename;
 
-            // Pastikan pengajuan PKL ditemukan
-            if (!$pengajuan) {
-                return response()->json(['error' => 'Pengajuan PKL tidak ditemukan'], 404);
+            // Periksa apakah file portofolio ada
+            if (!Storage::exists($portofolioPath)) {
+                return response()->json(['error' => 'File Portofolio tidak ditemukan'], 404);
             }
 
-            // Kembalikan URL Portofolio
-            return response()->json(['portofolio_url' => asset('storage/' . $pengajuan->file_portofolio)]);
+            // Ambil file portofolio
+            $file = Storage::get($portofolioPath);
+
+            // Dapatkan tipe konten file
+            $contentType = Storage::mimeType($portofolioPath);
+
+            // Kirim respons dengan file portofolio
+            return response($file, 200)->header('Content-Type', $contentType);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error viewing Portofolio: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }
+
+    public function detail($groupId)
+    {
+        try {
+            // Cari detail pengajuan berdasarkan group_id
+            $pengajuan = PengajuanPKL::where('group_id', $groupId)->get();
+
+            if ($pengajuan->isEmpty()) {
+                return response()->json(['error' => 'Pengajuan dengan group_id ' . $groupId . ' tidak ditemukan'], 404);
+            }
+
+            return response()->json($pengajuan);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error saat mengambil detail pengajuan: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+
+
+
+
+
+
+
 }

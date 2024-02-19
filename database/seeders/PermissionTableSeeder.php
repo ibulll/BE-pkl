@@ -18,7 +18,8 @@ class PermissionTableSeeder extends Seeder
         'roles.index',
         'roles.create',
         'roles.edit',
-        'roles.delete'
+        'roles.delete',
+        'pengajuan.detail'
     ];
 
     protected $permissionSiswa = [
@@ -49,6 +50,7 @@ class PermissionTableSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'roles.delete', 'guard_name' => 'api']);
 
         Permission::firstOrCreate(['name' => 'pengajuan.updateStatus', 'guard_name' => 'api']);
+        Permission::firstOrCreate(['name' => 'pengajuan.detail', 'guard_name' => 'api']);
 
         //permissions siswa
         Permission::firstOrcreate(['name' => 'pengajuan.index', 'guard_name' => 'api']);

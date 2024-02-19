@@ -27,8 +27,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Jurnal::class);
     }
 
+    // public function siswa()
+    // {
+    //     return $this->hasOne(Siswa::class, 'user_id');
+    // }
+
     protected $guard_name = 'api';
-    
+
 
     /**
      * The attributes that are mass assignable.
@@ -66,33 +71,34 @@ class User extends Authenticatable implements JWTSubject
         'role_id' => 4, // Ganti nilai default sesuai kebutuhan
     ];
 
-    public function getPermissionArray(){
+    public function getPermissionArray()
+    {
         return $this->getAllPermissions()->
-        mapWithkeys(function($pr){
-            return [$pr['name'] => true];
-        });
+            mapWithkeys(function ($pr) {
+                return [$pr['name'] => true];
+            });
     }
     /**
      * getJWTIdentifier
      * 
      * @return void
-      */ 
+     */
 
 
-      public function getJWTIdentifier()
-      {
-          return $this->getKey();
-      }
-  
-      /**
-       * getJWTCustomClaims
-       * 
-       * @return void
-        */ 
-  
-  
-      public function getJWTCustomClaims()
-      {
-         return [];
-      }
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * getJWTCustomClaims
+     * 
+     * @return void
+     */
+
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

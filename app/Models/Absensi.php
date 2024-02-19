@@ -22,7 +22,8 @@ class Absensi extends Model
         'nama',
         'nisn',
         'foto',
-        'tanggal_absen'
+        'tanggal_absen',
+        'waktu_absen'
     ];
 
     public function pengajuanPKL()

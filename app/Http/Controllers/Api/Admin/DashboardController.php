@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Models\User;
+use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -30,4 +31,17 @@ class DashboardController extends Controller
         ], 500);
         }
     }
-}
+
+    public function countPendingApplications()
+    {
+        // Menghitung jumlah pengajuan PKL yang masih dalam status "Diperiksa"
+        $countPendingApplications = PengajuanPKL::where('status', 'Diperiksa')->count();
+    
+        return response()->json([
+            'countPendingApplications' => $countPendingApplications,
+        ]);
+    }
+    
+    
+    }
+

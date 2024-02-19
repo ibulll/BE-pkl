@@ -4,20 +4,22 @@ use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\GetEmailController;
+use App\Http\Controllers\Api\Admin\PembimbingController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\EmailController;
 use App\Http\Controllers\APi\Admin\JurnalController;
+use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\AbsenSiswaController;
 use App\Http\Controllers\Api\Admin\PermissionController;
+use App\Http\Controllers\Api\Admin\PerusahaanController;
 use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
 use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
-use App\Http\Controllers\Api\Admin\AbsenSiswaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +47,8 @@ Route::prefix('admin')->group(function () {
     Route::group(['middleware' => ['auth:api']], function () {
         // dashboard
         Route::get('/dashboard/count-data', [DashboardController::class, 'getCountData']);
+
+        Route::get('/dashboard/count-pending-applications', [DashboardController::class, 'countPendingApplications']);
 
         // roles
         Route::apiResource('/roles', RoleController::class)->middleware('permission:roles.index|roles.store|roles.update|roles.delete');
@@ -81,6 +85,21 @@ Route::prefix('admin')->group(function () {
         Route::get('pengajuan-pkl/{id}/view-cv', [PengajuanSiswaController::class, 'viewCV']);
 
         Route::get('pengajuan-pkl/{id}/view-portofolio', [PengajuanSiswaController::class, 'viewPortofolio']);
+
+        Route::get('/detail-pengajuan/{groupId}', [PengajuanSiswaController::class, 'detail']);
+
+        //Perusahaan
+        Route::get('/perusahaan', [PerusahaanController::class, 'index']);
+        Route::post('/perusahaan', [PerusahaanController::class, 'store']);
+        Route::get('/perusahaan/{id}', [PerusahaanController::class, 'show']);
+        Route::put('/perusahaan/{id}', [PerusahaanController::class, 'update']);
+        Route::delete('/perusahaan/{id}', [PerusahaanController::class, 'destroy']);
+
+
+
+        Route::get('daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
+
+
     });
 });
 
@@ -92,10 +111,26 @@ Route::prefix('siswa')->group(function () {
 
         Route::get('/dashboard', [DashboardSiswaController::class, 'getDaftarAkunSiswa']);
 
+        Route::get('/waktu', [DashboardSiswaController::class, 'status']);
+        Route::get('/status', [DashboardSiswaController::class, 'status']);
+        //pengajuan siswa
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
+        Route::get('/daftar-kelas', [PengajuanPKLController::class, 'getDaftarKelas']);
+        Route::get('/daftar-perusahaan', [PengajuanPKLController::class, 'getDaftarPerusahaan']);
+
 
         Route::apiResource('/jurnal', JurnalSiswaController::class)->middleware('permission:jurnal.index|jurnal.store|jurnal.update|jurnal.destroy|jurnal.show');
 
         Route::post('/absen', [AbsensiController::class, 'store']);
+        Route::get('/absensi-list', [AbsensiController::class, 'list']);
+    });
+});
+
+Route::prefix('pembimbing')->group(function () {
+
+    Route::group(['middleware' => ['auth:api']], function () {
+
+        Route::get('/pembimbing', [PembimbingController::class, 'index']);
+        Route::post('/assign-to-group', [PembimbingController::class, 'assignToSiswa']);
     });
 });

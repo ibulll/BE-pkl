@@ -30,16 +30,18 @@ class JurnalController extends Controller
             if ($id === null) {
                 // Ambil data siswa dengan role_id 4
                 $siswa = User::where('role_id', 4)->get(['id', 'name']);
-        
-                // Ambil NISN dari tabel PengajuanPKL
-                $nisnData = PengajuanPKL::whereIn('user_id', $siswa->pluck('id'))->pluck('nisn', 'user_id');
-        
-                // Gabungkan NISN dengan data siswa
-                $siswa->transform(function ($user) use ($nisnData) {
-                    $user->nisn = $nisnData[$user->id] ?? null;
+
+                // Ambil NISN dan kelas dari tabel PengajuanPKL
+                $pengajuanPKL = PengajuanPKL::whereIn('user_id', $siswa->pluck('id'))->get(['user_id', 'nisn', 'kelas']);
+
+                // Gabungkan NISN dan kelas dengan data siswa
+                $siswa->transform(function ($user) use ($pengajuanPKL) {
+                    $pengajuan = $pengajuanPKL->where('user_id', $user->id)->first();
+                    $user->nisn = $pengajuan ? $pengajuan->nisn : null;
+                    $user->kelas = $pengajuan ? $pengajuan->kelas : null;
                     return $user;
                 });
-        
+
                 return response()->json($siswa, 200);
             } else {
                 // Ambil data jurnal berdasarkan ID siswa
@@ -53,17 +55,19 @@ class JurnalController extends Controller
                     return response()->json(['error' => 'User not found.'], 404);
                 }
 
-                // Ambil NISN dari tabel PengajuanPKL
+                // Ambil NISN dan kelas dari tabel PengajuanPKL
                 $pengajuan = PengajuanPKL::where('user_id', $id)->first();
                 $nisn = $pengajuan ? $pengajuan->nisn : null;
+                $kelas = $pengajuan ? $pengajuan->kelas : null;
 
-                // Jika tidak ada entri PengajuanPKL, berikan respons dengan NISN kosong
+                // Jika tidak ada entri PengajuanPKL, berikan respons dengan NISN dan kelas kosong
                 if (!$nisn) {
                     return response()->json([
                         'user_jurnal' => [
                             'id' => $userJurnal->id,
                             'name' => $userJurnal->name,
                             'nisn' => null, // NISN kosong
+                            'kelas' => null, // Kelas kosong
                             'jurnal' => $jurnals,
                         ],
                         'all_jurnals' => $jurnals,
@@ -76,6 +80,7 @@ class JurnalController extends Controller
                         'id' => $userJurnal->id,
                         'name' => $userJurnal->name,
                         'nisn' => $nisn, // Tambahkan NISN ke respons
+                        'kelas' => $kelas, // Tambahkan kelas ke respons
                         'jurnal' => $jurnals,
                     ],
                     'all_jurnals' => $jurnals,
@@ -86,4 +91,6 @@ class JurnalController extends Controller
             return response()->json(['error' => 'Error fetching jurnal data.' . $e->getMessage()], 500);
         }
     }
+
+
 }
