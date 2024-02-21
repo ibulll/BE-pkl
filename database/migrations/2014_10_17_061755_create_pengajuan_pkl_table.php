@@ -17,6 +17,7 @@ class CreatePengajuanPklTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id'); // Menambahkan kolom user_id
             $table->string('nama');
+            $table->string('nisn');
             $table->enum('kelas', ['XII PPLG 1', 'XII PPLG 2', 'XII PPLG 3']);
             $table->string('cv')->nullable();
             $table->string('portofolio')->nullable();

@@ -72,6 +72,9 @@ class UserController extends Controller
             'kelas' => ($request->input('role') === 'siswa') ? 'required|in:XII PPLG 1,XII PPLG 2,XII PPLG 3' : '', // Validasi kelas hanya untuk siswa
         ]);
 
+        // Menetapkan peran
+        $role = Role::where('name', $request->input('role'))->first();
+
         if ($validator->fails()) {
             // Mengambil pesan kesalahan dari validator
             $errors = $validator->errors()->all();
@@ -96,6 +99,9 @@ class UserController extends Controller
                 $user->nomer_telpon = $request->input('nomer_telpon');
             }
             $user->password = bcrypt($request->input('password'));
+
+            $user->assignRole($request->input('role'));
+
             $user->save();
 
             return response()->json(['message' => 'User berhasil dibuat'], 201);
@@ -121,37 +127,36 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function update(UserStoreRequest $request, $id)
+    public function update(Request $request, $id)
     {
         try {
-            $validatedData = $request->validated();
             $user = User::findOrFail($id);
 
+            // Validasi data yang diperbolehkan untuk diupdate sesuai peran pengguna
+            $allowedFields = ['name', 'email'];
+            if ($user->hasRole(['pembimbing', 'kaprog'])) {
+                $allowedFields = array_merge($allowedFields, ['nip', 'nomer_telpon', 'telpon', 'password']);
+            } elseif ($user->hasRole('siswa')) {
+                $allowedFields = array_merge($allowedFields, ['nisn', 'password']);
+            }
+
+            // Filter data yang diizinkan untuk diupdate
+            $data = $request->only($allowedFields);
+
             // Update user data
-            $user->update([
-                'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
-            ]);
+            $user->update($data);
 
             // Optionally, update the password if provided
             if ($request->filled('password')) {
                 $user->update(['password' => Hash::make($request->input('password'))]);
             }
 
-            // Update user roles
-            $roleIds = [$validatedData['role_id']]; // Role baru yang diinput dari form
-
-            // Hapus peran lama dan tambahkan peran baru
-            $user->syncRoles($roleIds);
-
-            $user->role_id = $validatedData['role_id'];
-            $user->save();
-
             return response()->json(['message' => 'User updated successfully']);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error updating user'], 500);
+            return response()->json(['error' => 'Error updating user: ' . $e->getMessage()], 500);
         }
     }
+
 
 
     public function destroy($id)
