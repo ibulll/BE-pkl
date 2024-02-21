@@ -13,7 +13,7 @@ class PengajuanPKL extends Model
     protected $table = 'pengajuan_pkl';
 
     protected $fillable = [
-        'user_id', 
+        'user_id',
         'nama',
         'nisn',
         'kelas',
@@ -41,6 +41,7 @@ class PengajuanPKL extends Model
 
     public function pembimbing()
     {
-        return $this->belongsToMany(Pembimbing::class, 'group_id');
+        return $this->belongsTo(Pembimbing::class, 'pembimbing_id');
     }
+
 }

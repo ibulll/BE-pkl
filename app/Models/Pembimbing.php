@@ -14,8 +14,9 @@ class Pembimbing extends Model
 
     public function pengajuanPkl()
     {
-        return $this->belongsToMany(PengajuanPKL::class, 'group_id');
+        return $this->belongsTo(PengajuanPKL::class, 'group_id');
     }
+
 
     public function user()
     {

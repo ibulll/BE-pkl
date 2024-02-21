@@ -98,6 +98,7 @@ Route::prefix('admin')->group(function () {
 
 
         Route::get('daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
+        Route::post('/assign', [PembimbingController::class, 'assignToGroup']);
 
 
     });
@@ -131,6 +132,5 @@ Route::prefix('pembimbing')->group(function () {
     Route::group(['middleware' => ['auth:api']], function () {
 
         Route::get('/pembimbing', [PembimbingController::class, 'index']);
-        Route::post('/assign-to-group', [PembimbingController::class, 'assignToSiswa']);
     });
 });

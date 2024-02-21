@@ -20,33 +20,32 @@ class PembimbingController extends Controller
     {
         // Validasi request
         $request->validate([
-            'pembimbing_id' => 'required|exists:pembimbings,id',
-            'group_id' => 'required|exists:pengajuan_pkl,id',
+            'pembimbing_id' => 'required|exists:pembimbing,id',
+            'group_id' => 'required|exists:pengajuan_pkl,group_id',
         ]);
 
-        // Ambil pengajuan PKL yang terkait dengan pembimbing
-        $pengajuanPkl = PengajuanPKL::where('pembimbing_id', $request->pembimbing_id)->first();
+        try {
+            // Temukan pengajuan PKL yang terkait dengan kelompok
+            $pengajuanPkl = PengajuanPKL::where('group_id', $request->group_id)->get();
 
-        if (!$pengajuanPkl) {
-            return response()->json(['error' => 'Tidak ada pengajuan PKL yang terkait dengan pembimbing ini'], 400);
+            // Temukan pembimbing
+            $pembimbing = Pembimbing::findOrFail($request->pembimbing_id);
+
+            // Tugaskan pembimbing ke setiap pengajuan PKL dalam kelompok
+            foreach ($pengajuanPkl as $pkl) {
+                $pkl->pembimbing_id = $pembimbing->id;
+                $pkl->save();
+            }
+
+            // Update kolom group_id pada tabel pembimbing
+            $pembimbing->group_id = $request->group_id;
+            $pembimbing->save();
+
+            return response()->json(['message' => 'Pembimbing berhasil ditugaskan ke kelompok siswa']);
+        } catch (\Exception $e) {
+            // Tangkap kesalahan dan kirimkan respons JSON dengan kode status 500
+            return response()->json(['error' => 'Gagal menugaskan pembimbing', 'message' => $e->getMessage()], 500);
         }
-
-        // Ambil group_id dari pengajuan PKL
-        $group_id = $pengajuanPkl->group_id;
-
-        // Ambil pembimbing
-        $pembimbing = Pembimbing::findOrFail($request->pembimbing_id);
-
-        // Periksa apakah grup sudah memiliki dua pembimbing
-        $group = PengajuanPKL::findOrFail($group_id);
-        if ($group->pembimbings()->count() >= 2) {
-            return response()->json(['error' => 'Grup sudah memiliki dua pembimbing'], 400);
-        }
-
-        // Lakukan penugasan pembimbing ke grup
-        $group->pembimbings()->attach($pembimbing);
-
-        return response()->json(['message' => 'Pembimbing berhasil ditugaskan ke grup']);
     }
 
     public function getDaftarPembimbing(Request $request)

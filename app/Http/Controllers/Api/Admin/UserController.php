@@ -7,7 +7,8 @@ use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\UserStoreRequest;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -58,57 +59,50 @@ class UserController extends Controller
         }
     }
 
-    public function store(UserStoreRequest $request)
+    public function store(Request $request)
     {
+        // Validasi request
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|string|email|unique:users,email',
+            'role' => 'required|string|in:admin,kaprog,pembimbing,siswa',
+            'nisn' => ($request->input('role') === 'siswa') ? 'string|unique:users,nisn' : '',
+            'nip' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string|unique:users,nip' : '',
+            'nomer_telpon' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string' : '',
+            'kelas' => ($request->input('role') === 'siswa') ? 'required|in:XII PPLG 1,XII PPLG 2,XII PPLG 3' : '', // Validasi kelas hanya untuk siswa
+        ]);
+
+        if ($validator->fails()) {
+            // Mengambil pesan kesalahan dari validator
+            $errors = $validator->errors()->all();
+            return response()->json(['error' => 'Validasi gagal', 'message' => $errors], 400);
+        }
+
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6',
-                'role' => 'required|string|in:admin,kaprog,pembimbing,siswa',
-            ]);
+            // Cari role_id berdasarkan nama peran
+            $role = Role::where('name', $request->input('role'))->firstOrFail();
 
-            // Menetapkan peran
-            $role = Role::where('name', $request->input('role'))->first();
-
-            if (!$role) {
-                return response()->json([
-                    'message' => 'Peran yang diberikan tidak valid.',
-                ], 422);
+            // Buat user baru
+            $user = new User();
+            $user->name = $request->input('name');
+            $user->email = $request->input('email');
+            $user->role_id = $role->id;
+            // Set data berdasarkan peran pengguna
+            if ($request->input('role') === 'siswa') {
+                $user->nisn = $request->input('nisn');
+                $user->kelas = $request->input('kelas');
+            } elseif ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') {
+                $user->nip = $request->input('nip');
+                $user->nomer_telpon = $request->input('nomer_telpon');
             }
+            $user->password = bcrypt($request->input('password'));
+            $user->save();
 
-            // Membuat User
-            $user = User::create([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'password' => bcrypt($request->input('password')),
-                'role_id' => $role->id,
-            ]);
-
-            // Menetapkan peran menggunakan Spatie Laravel Permission (sesuaikan dengan package yang Anda gunakan)
-            $user->assignRole($request->input('role'));
-
-            // Menyegarkan data pengguna untuk mendapatkan data yang diperbarui, termasuk peran
-            $user = $user->fresh();
-
-            if (!$user->role) {
-                // Handle jika peran tidak terhubung dengan pengguna
-                return response()->json([
-                    'message' => 'Gagal menetapkan peran untuk pengguna.',
-                ], 500);
-            }
-
-            return response()->json([
-                'user' => $user,
-                'message' => 'Pengguna berhasil dibuat.',
-            ], 200);
-        } catch (\Exception $exception) {
-            return response()->json([
-                'message' => 'Terjadi kesalahan. Silakan coba lagi nanti.',
-            ], 500);
+            return response()->json(['message' => 'User berhasil dibuat'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal membuat user', 'message' => $e->getMessage()], 500);
         }
     }
-
 
 
     public function show($id)
