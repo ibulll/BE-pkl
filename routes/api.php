@@ -98,6 +98,8 @@ Route::prefix('admin')->group(function () {
 
 
         Route::get('daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
+        Route::get('/detail/{groupId}', [PengajuanSiswaController::class, 'detail']);
+
 
 
     });
