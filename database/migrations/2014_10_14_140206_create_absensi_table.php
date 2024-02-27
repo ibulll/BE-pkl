@@ -18,13 +18,11 @@ class CreateAbsensiTable extends Migration
             // Foreign key untuk user
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            // Kolom-kolom lainnya
-            $table->string('nama');
-            $table->string('nisn');
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
             $table->string('foto');
-            $table->dateTime('tanggal_absen');
+            $table->date('tanggal_absen');
+            $table->time('waktu_absen');
             $table->timestamps();
         });
     }

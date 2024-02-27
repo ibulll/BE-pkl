@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('nip')->nullable();
             $table->string('name');
             $table->string('nomer_telpon')->nullable();
-            $table->enum('kelas', ['XII PPLG 1', 'XII PPLG 2', 'XII PPLG 3']);
+            $table->string('kelas')->nullable();
+            $table->string('pangkat')->nullable();
+            $table->string('jabatan')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

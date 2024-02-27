@@ -16,9 +16,7 @@ class CreatePengajuanPklTable extends Migration
         Schema::create('pengajuan_pkl', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id'); // Menambahkan kolom user_id
-            $table->string('nama');
-            $table->string('nisn');
-            $table->enum('kelas', ['XII PPLG 1', 'XII PPLG 2', 'XII PPLG 3']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('cv')->nullable();
             $table->string('portofolio')->nullable();
             $table->string('nama_perusahaan')->nullable();
@@ -29,14 +27,11 @@ class CreatePengajuanPklTable extends Migration
             $table->binary('file_cv')->nullable();
             $table->binary('file_portofolio')->nullable();
             $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak']);
-            $table->unsignedBigInteger('group_id')->nullable(); // Menggunakan tipe data yang sesuai
-            $table->foreign('group_id')->references('id')->on('group')->onDelete('cascade');
+            $table->string('group_id')->nullable();
             $table->unsignedBigInteger('pembimbing_id')->nullable();
-            $table->foreign('pembimbing_id')->references('id')->on('pembimbing')->onDelete('set null');
+            $table->foreign('pembimbing_id')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
 
-            // Menambahkan indeks untuk kolom user_id
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

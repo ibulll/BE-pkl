@@ -22,7 +22,7 @@ class PengajuanPKLController extends Controller
             // Lakukan pencarian nama siswa berdasarkan role_id
             $siswa = User::where('role_id', 4)
                 ->where('name', 'like', '%' . $nama . '%')
-                ->get(['id', 'name']);
+                ->get(['id', 'name', 'nisn', 'kelas']);
 
             // Cek apakah data ditemukan
             if ($siswa->isEmpty()) {
@@ -64,35 +64,53 @@ class PengajuanPKLController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validate incoming request data
+            // Validasi data permohonan yang masuk
             $validator = Validator::make($request->all(), [
-                'nama' => 'required|string',
-                // 'nisn' => 'required|string',
-                // 'kelas' => 'required|string',
+                'user_id' => 'required|int', // Ubah validasi menjadi user_id yang diberikan
                 'cv' => 'nullable|string',
                 'portofolio' => 'nullable|string',
                 'nama_perusahaan' => 'nullable|string',
                 'email_perusahaan' => 'nullable|string',
                 'alamat_perusahaan' => 'nullable|string',
-                'perusahaan_id' => 'nullable|int', // Ubah menjadi wajib dipilih
+                'perusahaan_id' => 'nullable|int', // Wajib dipilih jika perusahaan sudah ada
                 'file_cv' => 'file|required|mimes:pdf',
                 'file_portofolio' => 'file|required|mimes:pdf',
             ]);
-
-            // Check for validation errors
+    
+            // Periksa apakah ada kesalahan validasi
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 400);
             }
-
-            // Fill the PengajuanPKL instance with the request data
+    
+            // Ambil user dari tabel users berdasarkan user_id yang dimasukkan
+            $user = User::find($request->input('user_id'));
+            if (!$user) {
+                return response()->json(['error' => 'User tidak ditemukan'], 404);
+            }
+    
+            // Periksa apakah pengguna sudah memiliki permohonan yang sedang dalam status "Diperiksa", "Diproses", atau "Diterima"
+            if ($user->pengajuanPKL()->whereIn('status', ['Diperiksa', 'Diproses', 'Diterima'])->exists()) {
+                // Jika pengguna memiliki permohonan yang sedang dalam status yang tidak diizinkan, kembalikan respons dengan pesan kesalahan
+                return response()->json(['error' => 'Anda sudah memiliki permohonan yang sedang dalam proses atau diterima.'], 400);
+            }
+    
+            // Periksa apakah pengguna memiliki permohonan yang pernah ditolak
+            if ($user->pengajuanPKL()->where('status', 'Ditolak')->exists()) {
+                // Jika pengguna memiliki permohonan yang pernah ditolak, izinkan mereka untuk mengajukan permohonan baru
+                // Anda bisa menambahkan logika tambahan di sini, seperti menghapus permohonan sebelumnya atau memperbarui statusnya
+            }
+    
+            // Buat instance PengajuanPKL dengan data dari permohonan
             $pengajuan = new PengajuanPKL();
-            $pengajuan->nama = $request->input('nama');
-            $pengajuan->nisn = $request->input('nisn');
+    
+            // Tetapkan user_id ke ID pengguna yang ditemukan
+            $pengajuan->user_id = $user->id;
+    
+            // Isi data permohonan dari data pengguna yang ditemukan
             $pengajuan->cv = $request->input('cv');
-            $pengajuan->kelas = $request->input('kelas');
             $pengajuan->portofolio = $request->input('portofolio');
             $pengajuan->perusahaan_id = $request->input('perusahaan_id');
-
+    
             // Jika perusahaan_id tidak kosong, artinya siswa memilih perusahaan yang sudah disediakan
             if ($request->filled('perusahaan_id')) {
                 $perusahaan = Perusahaan::find($request->input('perusahaan_id'));
@@ -109,35 +127,25 @@ class PengajuanPKLController extends Controller
                 $pengajuan->email_perusahaan = $request->input('email_perusahaan');
                 $pengajuan->alamat_perusahaan = $request->input('alamat_perusahaan');
             }
-
-            // Set group_id to user_id of the authenticated user
+    
+            // Set group_id ke user_id pengguna yang terautentikasi
             $pengajuan->group_id = auth()->id();
-
-            // Ambil user_id teman berdasarkan nama yang dipilih
-            $user = User::where('name', $request->input('nama'))->first();
-            if (!$user) {
-                return response()->json(['error' => 'User teman tidak ditemukan'], 404);
-            }
-
-            // Simpan user_id teman dalam pengajuan PKL
-            $pengajuan->user_id = $user->id;
-            $pengajuan->nisn = $user->nisn;
-            $pengajuan->kelas = $user->kelas;
-
-            // Store the uploaded 'fileCV' and 'filePortofolio'
+    
+            // Simpan berkas 'fileCV' dan 'filePortofolio' yang diunggah
             $pengajuan->file_cv = $request->file('file_cv')->store('file_cv', 'public');
             $pengajuan->file_portofolio = $request->file('file_portofolio')->store('file_portofolio', 'public');
 
-            // Save the PengajuanPKL instance to the database
             $pengajuan->save();
-
-            // Return success response with pengajuan data
+    
+            // Tampilkan respons sukses dengan data permohonan dan informasi tambahan
             return response()->json([
                 'message' => 'Pengajuan PKL berhasil disimpan',
-                'pengajuan' => $pengajuan->toArray() // Or you can customize what data you want to return
+                'pengajuan' => $pengajuan->toArray(), // Atau Anda dapat menyesuaikan data yang ingin ditampilkan
+                'nisn' => $user->nisn,
+                'kelas' => $user->kelas
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error storing Pengajuan PKL: ' . $e->getMessage()], 500);
         }
-    }
+    }    
 }

@@ -11,35 +11,51 @@ use App\Http\Controllers\Controller;
 class PembimbingController extends Controller
 {
     public function index()
-    {
-        $pembimbing = Pembimbing::all();
-        return response()->json($pembimbing);
+{
+    try {
+        // Ambil semua data pengajuan PKL yang memiliki pembimbing (pengajuanPkl) dan saring hanya yang memiliki role_id 3 (pembimbing)
+        $pengajuanPKLs = PengajuanPKL::with('pembimbing')->whereHas('pembimbing', function ($query) {
+            $query->where('role_id', 3);
+        })->get();
+
+        // Loop melalui setiap pengajuan PKL dan ambil data pembimbing serta nama perusahaannya
+        $pembimbings = $pengajuanPKLs->map(function ($pengajuanPKL) {
+
+            return [
+                'nip' => $pengajuanPKL->pembimbing->nip,
+                'name' => $pengajuanPKL->pembimbing->name,
+                'email' => $pengajuanPKL->pembimbing->email,
+                'nomer_telpon' => $pengajuanPKL->pembimbing->nomer_telpon,
+                'nama_perusahaan' => $pengajuanPKL->nama_perusahaan,
+            ];
+        });
+
+        return response()->json($pembimbings, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error fetching pembimbing data.' . $e->getMessage()], 500);
     }
+}
+
+
+
 
     public function assignToGroup(Request $request)
     {
         // Validasi request
         $request->validate([
-            'pembimbing_id' => 'required|exists:pembimbing,id',
+            'pembimbing_id' => 'required|exists:users,id', // Validasi keberadaan pembimbing di tabel users
             'group_id' => 'required|exists:pengajuan_pkl,group_id',
         ]);
 
         try {
-            // Temukan pengajuan PKL yang terkait dengan kelompok
-            $pengajuanPkl = PengajuanPKL::where('group_id', $request->group_id)->get();
+            // Dapatkan data pengajuan PKL berdasarkan group_id yang diberikan
+            $pengajuanPkl = PengajuanPkl::where('group_id', $request->group_id)->get();
 
-            // Temukan pembimbing
-            $pembimbing = Pembimbing::findOrFail($request->pembimbing_id);
-
-            // Tugaskan pembimbing ke setiap pengajuan PKL dalam kelompok
+            // Loop melalui setiap entri pengajuan PKL dan atur pembimbing_id
             foreach ($pengajuanPkl as $pkl) {
-                $pkl->pembimbing_id = $pembimbing->id;
-                $pkl->save();
+                $pkl->pembimbing_id = $request->pembimbing_id; // Set pembimbing_id
+                $pkl->save(); // Simpan perubahan
             }
-
-            // Update kolom group_id pada tabel pembimbing
-            $pembimbing->group_id = $request->group_id;
-            $pembimbing->save();
 
             return response()->json(['message' => 'Pembimbing berhasil ditugaskan ke kelompok siswa']);
         } catch (\Exception $e) {
@@ -48,24 +64,22 @@ class PembimbingController extends Controller
         }
     }
 
-    public function getDaftarPembimbing(Request $request)
+    public function getDaftarSiswa(Request $request)
     {
         try {
-            $nama = $request->input('nama');
-
-            // Lakukan pencarian nama siswa berdasarkan role_id
-            $pembimbing = User::where('role_id', 3)
-                ->where('name', 'like', '%' . $nama . '%')
-                ->get(['id', 'name']);
+            // Ambil data pengajuan PKL yang memiliki status 'Diterima' dan relasi pembimbing
+            $pengajuan = PengajuanPkl::where('status', 'Diterima')
+                ->with('pembimbing:id,name,nip,nomer_telpon,email')
+                ->get();
 
             // Cek apakah data ditemukan
-            if ($pembimbing->isEmpty()) {
-                return response()->json(['error' => 'Pembimbing tidak ditemukan'], 404);
+            if ($pengajuan->isEmpty()) {
+                return response()->json(['error' => 'Data siswa dengan status Diterima tidak ditemukan'], 404);
             }
 
-            return response()->json($pembimbing);
+            return response()->json($pengajuan);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error mencari pembimbing'], 500);
+            return response()->json(['error' => 'Error mencari data siswa' . $e->getMessage()], 500);
         }
     }
 }

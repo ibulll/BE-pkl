@@ -19,7 +19,13 @@ class PermissionTableSeeder extends Seeder
         'roles.create',
         'roles.edit',
         'roles.delete',
-        'pengajuan.detail'
+        'pengajuan.detail',
+        // 'perusahaan.getPerusahaan',
+        // 'perusahaan.index',
+        // 'perusahaan.store',
+        // 'perusahaan.show',
+        // 'perusahaan.update',
+        // 'perusahaan.destroy'
     ];
 
     protected $permissionSiswa = [

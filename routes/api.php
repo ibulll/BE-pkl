@@ -5,21 +5,29 @@ use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GetEmailController;
-use App\Http\Controllers\Api\Admin\PembimbingController;
+use App\Http\Controllers\Api\Admin\PdfController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\EmailController;
 use App\Http\Controllers\APi\Admin\JurnalController;
+use App\Http\Controllers\Api\Kaprog\AbsenController;
 use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Pembimbing\SppdController;
 use App\Http\Controllers\Api\Admin\AbsenSiswaController;
+use App\Http\Controllers\Api\Admin\PembimbingController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\PerusahaanController;
 use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
+use App\Http\Controllers\Api\Pembimbing\DataAbsenController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
+use App\Http\Controllers\Api\Siswa\InfoPembimbingController;
+use App\Http\Controllers\Api\Kaprog\DashboardKaprogController;
+use App\Http\Controllers\Api\Pembimbing\DashboardPembimbingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +52,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 /// group route with prefix "admin"
 Route::prefix('admin')->group(function () {
     // group route with middleware "auth:api" and "checkRole:admin"
-    Route::group(['middleware' => ['auth:api']], function () {
+    Route::group(['middleware' => ['auth:api', 'role:admin']], function () {
         // dashboard
         Route::get('/dashboard/count-data', [DashboardController::class, 'getCountData']);
 
@@ -74,8 +82,6 @@ Route::prefix('admin')->group(function () {
 
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
-        Route::get('/admin/get-emails', [GetEmailController::class, 'getEmails']);
-
         Route::get('/absensi', [AbsenSiswaController::class, 'index']);
 
         Route::get('/absensi/{id}', [AbsenSiswaController::class, 'show']);
@@ -95,25 +101,30 @@ Route::prefix('admin')->group(function () {
         Route::put('/perusahaan/{id}', [PerusahaanController::class, 'update']);
         Route::delete('/perusahaan/{id}', [PerusahaanController::class, 'destroy']);
 
-
-
-        Route::get('daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
+        //pembimbing
+        Route::get('/daftar', [PembimbingController::class, 'index']);
+        Route::get('/daftar-siswa', [PembimbingController::class, 'getDaftarSiswa']);
+        Route::get('/daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
         Route::post('/assign', [PembimbingController::class, 'assignToGroup']);
 
+
+        Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
+        Route::post('/tambah-nosurat', [PdfController::class, 'verifyPdf']);
 
     });
 });
 
 Route::prefix('siswa')->group(function () {
 
-    Route::group(['middleware' => ['auth:api']], function () {
+    Route::group(['middleware' => ['auth:api', 'role:siswa']], function () {
 
         Route::apiResource('/pengajuan-pkl', PengajuanPKLController::class)->middleware('permission:pengajuan.index|pengajuan.store');
 
         Route::get('/dashboard', [DashboardSiswaController::class, 'getDaftarAkunSiswa']);
 
-        Route::get('/waktu', [DashboardSiswaController::class, 'status']);
         Route::get('/status', [DashboardSiswaController::class, 'status']);
+        Route::get('/statusWithCountdown', [DashboardSiswaController::class, 'status']);
+        ;
         //pengajuan siswa
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
         Route::get('/daftar-kelas', [PengajuanPKLController::class, 'getDaftarKelas']);
@@ -124,13 +135,31 @@ Route::prefix('siswa')->group(function () {
 
         Route::post('/absen', [AbsensiController::class, 'store']);
         Route::get('/absensi-list', [AbsensiController::class, 'list']);
+
+        //info pembimbing
+        Route::get('/info-pembimbing', [InfoPembimbingController::class, 'show']);
     });
 });
 
 Route::prefix('pembimbing')->group(function () {
 
-    Route::group(['middleware' => ['auth:api']], function () {
+    Route::group(['middleware' => ['auth:api', 'role:pembimbing']], function () {
 
-        Route::get('/pembimbing', [PembimbingController::class, 'index']);
+        Route::get('/dashboard', [DashboardPembimbingController::class, 'siswaDibimbing']);
+        Route::get('/absen-siswa', [DataAbsenController::class, 'index']);
+
+        Route::post('/pengajuan-sppd', [SppdController::class, 'store']);
+    });
+});
+
+Route::prefix('kaprog')->group(function () {
+
+    Route::group(['middleware' => ['auth:api', 'role:kaprog']], function () {
+
+        //Dashboard
+        Route::get('/dashboard', [DashboardKaprogController::class, 'index']);
+
+        //AbsenSiswa
+        Route::get('/absen-siswa', [AbsenController::class, 'index']);
     });
 });

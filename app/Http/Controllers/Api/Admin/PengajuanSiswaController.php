@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Models\User;
 use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 ;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class PengajuanSiswaController extends Controller
@@ -15,18 +16,26 @@ class PengajuanSiswaController extends Controller
         try {
             // Mengambil semua data pengajuan_pkl dari database
             $pengajuan = PengajuanPKL::all();
-
+    
             // Menambahkan URL CV dan Portofolio ke data pengajuan
             $pengajuan->each(function ($item) {
                 $item->cv_url = $item->cv_url;
                 $item->portofolio_url = $item->portofolio_url;
+    
+                // Ubah user_id menjadi nisn dan kelas
+                $siswa = User::findOrFail($item->user_id);
+                $item->name = $siswa->name;
+                $item->nisn = $siswa->nisn;
+                $item->kelas = $siswa->kelas;
             });
-
+    
             return response()->json(['data' => $pengajuan]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error retrieving Pengajuan PKL: ' . $e->getMessage()], 500);
         }
     }
+    
+    
 
     public function updateStatus($id, Request $request)
     {
@@ -108,6 +117,15 @@ class PengajuanSiswaController extends Controller
         try {
             // Cari detail pengajuan berdasarkan group_id
             $pengajuan = PengajuanPKL::where('group_id', $groupId)->get();
+
+            $pengajuan->each(function ($item) {
+    
+                // Ubah user_id menjadi nisn dan kelas
+                $siswa = User::findOrFail($item->user_id);
+                $item->name = $siswa->name;
+                $item->nisn = $siswa->nisn;
+                $item->kelas = $siswa->kelas;
+            });
 
             if ($pengajuan->isEmpty()) {
                 return response()->json(['error' => 'Pengajuan dengan group_id ' . $groupId . ' tidak ditemukan'], 404);

@@ -14,9 +14,6 @@ class PengajuanPKL extends Model
 
     protected $fillable = [
         'user_id',
-        'nama',
-        'nisn',
-        'kelas',
         'cv',
         'portofolio',
         'nama_perusahaan',
@@ -25,6 +22,7 @@ class PengajuanPKL extends Model
         'file_cv',
         'file_portofolio',
         'group_id',
+        'pembimbing_id',
         'perusahaan_id',
         'status'
     ];
@@ -39,9 +37,19 @@ class PengajuanPKL extends Model
         return $this->belongsTo(Perusahaan::class);
     }
 
-    public function pembimbing()
+    public function pengajuanPkl()
     {
-        return $this->belongsTo(Pembimbing::class, 'pembimbing_id');
+        return $this->hasMany(PengajuanPkl::class, 'user_id');
     }
 
+    public function pembimbing()
+    {
+        return $this->belongsTo(User::class, 'pembimbing_id');
+    }
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

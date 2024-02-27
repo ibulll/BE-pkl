@@ -58,13 +58,6 @@ return [
             'throw' => false,
         ],
 
-        'pdfs' => [
-            'driver' => 'local',
-            'root' => public_path('pdfs'),
-            'url' => env('APP_URL') . '/pdfs',
-            'visibility' => 'public',
-        ],
-
     ],
 
     /*

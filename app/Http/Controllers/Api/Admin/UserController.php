@@ -60,55 +60,58 @@ class UserController extends Controller
     }
 
     public function store(Request $request)
-    {
-        // Validasi request
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users,email',
-            'role' => 'required|string|in:admin,kaprog,pembimbing,siswa',
-            'nisn' => ($request->input('role') === 'siswa') ? 'string|unique:users,nisn' : '',
-            'nip' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string|unique:users,nip' : '',
-            'nomer_telpon' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string' : '',
-            'kelas' => ($request->input('role') === 'siswa') ? 'required|in:XII PPLG 1,XII PPLG 2,XII PPLG 3' : '', // Validasi kelas hanya untuk siswa
-        ]);
+{
+    // Validasi request
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string',
+        'email' => 'required|string|email|unique:users,email',
+        'role' => 'required|string|in:admin,kaprog,pembimbing,siswa',
+        'nisn' => ($request->input('role') === 'siswa') ? 'string|unique:users,nisn' : '',
+        'nip' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string|unique:users,nip' : '',
+        'nomer_telpon' => ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') ? 'string' : '',
+        'kelas' => ($request->input('role') === 'siswa') ? 'required|in:XII PPLG 1,XII PPLG 2,XII PPLG 3' : '', // Validasi kelas hanya untuk siswa
+        'jabatan' => ($request->input('role') === 'pembimbing') ? 'required|string' : '', // Menambahkan validasi jabatan
+        'pangkat' => ($request->input('role') === 'pembimbing') ? 'nullable|string' : '', // Menambahkan validasi pangkat
+    ]);
 
-        // Menetapkan peran
-        $role = Role::where('name', $request->input('role'))->first();
-
-        if ($validator->fails()) {
-            // Mengambil pesan kesalahan dari validator
-            $errors = $validator->errors()->all();
-            return response()->json(['error' => 'Validasi gagal', 'message' => $errors], 400);
-        }
-
-        try {
-            // Cari role_id berdasarkan nama peran
-            $role = Role::where('name', $request->input('role'))->firstOrFail();
-
-            // Buat user baru
-            $user = new User();
-            $user->name = $request->input('name');
-            $user->email = $request->input('email');
-            $user->role_id = $role->id;
-            // Set data berdasarkan peran pengguna
-            if ($request->input('role') === 'siswa') {
-                $user->nisn = $request->input('nisn');
-                $user->kelas = $request->input('kelas');
-            } elseif ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') {
-                $user->nip = $request->input('nip');
-                $user->nomer_telpon = $request->input('nomer_telpon');
-            }
-            $user->password = bcrypt($request->input('password'));
-
-            $user->assignRole($request->input('role'));
-
-            $user->save();
-
-            return response()->json(['message' => 'User berhasil dibuat'], 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Gagal membuat user', 'message' => $e->getMessage()], 500);
-        }
+    if ($validator->fails()) {
+        // Mengambil pesan kesalahan dari validator
+        $errors = $validator->errors()->all();
+        return response()->json(['error' => 'Validasi gagal', 'message' => $errors], 400);
     }
+
+    try {
+        // Cari role_id berdasarkan nama peran
+        $role = Role::where('name', $request->input('role'))->firstOrFail();
+
+        // Buat user baru
+        $user = new User();
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->role_id = $role->id;
+        // Set data berdasarkan peran pengguna
+        if ($request->input('role') === 'siswa') {
+            $user->nisn = $request->input('nisn');
+            $user->kelas = $request->input('kelas');
+        } elseif ($request->input('role') === 'pembimbing' || $request->input('role') === 'kaprog') {
+            $user->nip = $request->input('nip');
+            $user->nomer_telpon = $request->input('nomer_telpon');
+            // Tambahkan kolom jabatan dan pangkat
+            $user->jabatan = $request->input('jabatan');
+            $user->pangkat = $request->input('pangkat');
+        }
+        $user->password = bcrypt($request->input('password'));
+
+        $user->assignRole($request->input('role'));
+
+        $user->save();
+
+        return response()->json(['message' => 'User berhasil dibuat'], 201);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Gagal membuat user', 'message' => $e->getMessage()], 500);
+    }
+}
+
 
 
     public function show($id)
@@ -135,7 +138,7 @@ class UserController extends Controller
             // Validasi data yang diperbolehkan untuk diupdate sesuai peran pengguna
             $allowedFields = ['name', 'email'];
             if ($user->hasRole(['pembimbing', 'kaprog'])) {
-                $allowedFields = array_merge($allowedFields, ['nip', 'nomer_telpon', 'telpon', 'password']);
+                $allowedFields = array_merge($allowedFields, ['nip', 'nomer_telpon', 'password']);
             } elseif ($user->hasRole('siswa')) {
                 $allowedFields = array_merge($allowedFields, ['nisn', 'password']);
             }

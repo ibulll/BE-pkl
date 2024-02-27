@@ -27,6 +27,17 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Jurnal::class);
     }
 
+    public function pengajuanPKL()
+    {
+        return $this->hasMany(PengajuanPKL::class);
+    }
+
+    public function pembimbings()
+    {
+        return $this->hasMany(Pembimbing::class);
+    }
+
+
     // public function siswa()
     // {
     //     return $this->hasOne(Siswa::class, 'user_id');
