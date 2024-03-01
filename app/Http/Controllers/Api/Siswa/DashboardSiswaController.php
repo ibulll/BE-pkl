@@ -16,14 +16,14 @@ class DashboardSiswaController extends Controller
     public function status()
 {
     try {
-        // Ambil data pengajuan PKL yang memiliki status "Diterima" dan user_id yang sesuai dengan pengguna yang sedang masuk
+        // Ambil data pengajuan PKL yang memiliki status sesuai dengan kriteria yang diinginkan dan user_id yang sesuai dengan pengguna yang sedang masuk
         $pendingApplications = PengajuanPKL::where('user_id', auth()->id())
-            ->where('status', 'Diterima')
+            ->whereIn('status', ['Dipriksa', 'Diproses', 'Diterima', 'Ditolak'])
             ->get();
 
-        // Periksa apakah ada pengajuan PKL yang diterima
+        // Periksa apakah ada pengajuan PKL yang sesuai dengan kriteria
         if ($pendingApplications->isEmpty()) {
-            return response()->json(['message' => 'Anda belum memiliki pengajuan PKL yang diterima.'], 404);
+            return response()->json(['message' => 'Tidak ada data pengajuan PKL yang sesuai dengan kriteria yang diberikan.'], 404);
         }
 
         // Hitung waktu mundur untuk setiap pengajuan PKL yang diterima

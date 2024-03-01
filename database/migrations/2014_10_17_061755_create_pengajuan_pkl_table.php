@@ -28,8 +28,10 @@ class CreatePengajuanPklTable extends Migration
             $table->binary('file_portofolio')->nullable();
             $table->enum('status', ['Diperiksa', 'Diproses', 'Diterima', 'Ditolak']);
             $table->string('group_id')->nullable();
-            $table->unsignedBigInteger('pembimbing_id')->nullable();
-            $table->foreign('pembimbing_id')->references('id')->on('users')->onDelete('set null');
+            $table->unsignedBigInteger('pembimbing_id_1')->nullable();
+            $table->foreign('pembimbing_id_1')->references('id')->on('users')->onDelete('set null');
+            $table->unsignedBigInteger('pembimbing_id_2')->nullable();
+            $table->foreign('pembimbing_id_2')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
 
         });

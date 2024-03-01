@@ -11,33 +11,36 @@ use App\Http\Controllers\Controller;
 class PembimbingController extends Controller
 {
     public function index()
-{
-    try {
-        // Ambil semua data pengajuan PKL yang memiliki pembimbing (pengajuanPkl) dan saring hanya yang memiliki role_id 3 (pembimbing)
-        $pengajuanPKLs = PengajuanPKL::with('pembimbing')->whereHas('pembimbing', function ($query) {
-            $query->where('role_id', 3);
-        })->get();
+    {
+        try {
+            // Ambil semua data pembimbing (users) yang memiliki role_id 3 beserta data PengajuanPKL yang terkait
+            $pembimbings = User::where('role_id', 3)
+                ->leftJoin('pengajuan_pkl', function ($join) {
+                    $join->on('users.id', '=', 'pengajuan_pkl.pembimbing_id_1')
+                        ->orOn('users.id', '=', 'pengajuan_pkl.pembimbing_id_2');
+                })
+                ->select('users.*', 'pengajuan_pkl.nama_perusahaan')
+                ->get();
 
-        // Loop melalui setiap pengajuan PKL dan ambil data pembimbing serta nama perusahaannya
-        $pembimbings = $pengajuanPKLs->map(function ($pengajuanPKL) {
+            // Loop melalui setiap pembimbing dan ambil data yang diperlukan
+            $dataPembimbings = $pembimbings->map(function ($pembimbing) {
+                return [
+                    'user_id' => $pembimbing->id,
+                    'nip' => $pembimbing->nip,
+                    'name' => $pembimbing->name,
+                    'email' => $pembimbing->email,
+                    'jabatan' => $pembimbing->jabatan,
+                    'pangkat' => $pembimbing->pangkat,
+                    'nomer_telpon' => $pembimbing->nomer_telpon,
+                    'nama_perusahaan' => $pembimbing->nama_perusahaan,
+                ];
+            });
 
-            return [
-                'nip' => $pengajuanPKL->pembimbing->nip,
-                'name' => $pengajuanPKL->pembimbing->name,
-                'email' => $pengajuanPKL->pembimbing->email,
-                'nomer_telpon' => $pengajuanPKL->pembimbing->nomer_telpon,
-                'nama_perusahaan' => $pengajuanPKL->nama_perusahaan,
-            ];
-        });
-
-        return response()->json($pembimbings, 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error fetching pembimbing data.' . $e->getMessage()], 500);
+            return response()->json($dataPembimbings, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching pembimbing data: ' . $e->getMessage()], 500);
+        }
     }
-}
-
-
-
 
     public function assignToGroup(Request $request)
     {
@@ -53,7 +56,17 @@ class PembimbingController extends Controller
 
             // Loop melalui setiap entri pengajuan PKL dan atur pembimbing_id
             foreach ($pengajuanPkl as $pkl) {
-                $pkl->pembimbing_id = $request->pembimbing_id; // Set pembimbing_id
+                // Periksa apakah pembimbing_id_1 sudah terisi
+                if ($pkl->pembimbing_id_1 === null) {
+                    // Jika belum terisi, masukkan nilai baru ke pembimbing_id_1
+                    $pkl->pembimbing_id_1 = $request->pembimbing_id;
+                } elseif ($pkl->pembimbing_id_2 === null) {
+                    // Jika pembimbing_id_1 sudah terisi, masukkan nilai baru ke pembimbing_id_2
+                    $pkl->pembimbing_id_2 = $request->pembimbing_id;
+                } else {
+                    // Jika kedua kolom sudah terisi, kembalikan respons dengan pesan kesalahan
+                    return response()->json(['error' => 'Kedua kolom pembimbing sudah terisi'], 400);
+                }
                 $pkl->save(); // Simpan perubahan
             }
 
@@ -64,6 +77,33 @@ class PembimbingController extends Controller
         }
     }
 
+    public function all()
+    {
+        try {
+            // Ambil semua data siswa yang memiliki status 'Diterima' di tabel pengajuan PKL
+            $acceptedUsers = PengajuanPKL::where('status', 'Diterima')
+                ->join('users', 'pengajuan_pkl.user_id', '=', 'users.id')
+                ->select('pengajuan_pkl.group_id', 'pengajuan_pkl.nama_perusahaan', 'users.id as user_id', 'users.name', 'users.kelas', 'users.nisn')
+                ->distinct()
+                ->get();
+
+            // Transformasikan data yang telah diperoleh
+            $transformedData = $acceptedUsers->map(function ($user) {
+                return [
+                    'user_id' => $user->user_id,
+                    'name' => $user->name,
+                    'kelas' => $user->kelas,
+                    'nisn' => $user->nisn,
+                    'group_id' => $user->group_id,
+                    'nama_perusahaan' => $user->nama_perusahaan,
+                ];
+            });
+
+            return response()->json($transformedData, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching accepted group data: ' . $e->getMessage()], 500);
+        }
+    }
     public function getDaftarSiswa(Request $request)
     {
         try {
@@ -80,6 +120,30 @@ class PembimbingController extends Controller
             return response()->json($pengajuan);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error mencari data siswa' . $e->getMessage()], 500);
+        }
+    }
+
+    public function datasppd()
+    {
+        try {
+            // Ambil semua data pembimbing dari tabel Pembimbing
+            $pembimbings = Pembimbing::all();
+
+            // Loop melalui setiap pembimbing dan ambil data yang diperlukan
+            $dataPembimbings = $pembimbings->map(function ($pembimbing) {
+                return [
+                    'user_id' => $pembimbing->user_id,
+                    'status' => $pembimbing->status,
+                    'tanggal' => $pembimbing->tanggal,
+                    'hari' => $pembimbing->hari,
+                    'waktu' => $pembimbing->waktu,
+                    'lamanya_perjalanan' => $pembimbing->lamanya_perjalanan,
+                ];
+            });
+
+            return response()->json($dataPembimbings, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching pembimbing data.' . $e->getMessage()], 500);
         }
     }
 }

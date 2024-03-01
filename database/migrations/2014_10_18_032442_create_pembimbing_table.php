@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('tanggal');
             $table->string('hari');
             $table->string('waktu');
+            $table->string('lamanya_perjalanan');
             $table->timestamps();
         });
     }

@@ -13,23 +13,17 @@ use Illuminate\Support\Facades\Storage;
 class AbsenSiswaController extends Controller
 {
     public function index()
-    {
-        // Ambil daftar siswa yang memiliki akses ke absensi
-        $siswaList = User::where('role_id', 4)->get(['id', 'name']);
-
-        // Ambil NISN dan kelas dari tabel PengajuanPKL
-        $nisnData = PengajuanPKL::whereIn('user_id', $siswaList->pluck('id'))->pluck('nisn', 'user_id');
-        $kelasData = PengajuanPKL::whereIn('user_id', $siswaList->pluck('id'))->pluck('kelas', 'user_id');
-
-        // Gabungkan NISN dengan data siswa
-        $siswaList->transform(function ($user) use ($nisnData, $kelasData) {
-            $user->nisn = $nisnData[$user->id] ?? null;
-            $user->kelas = $kelasData[$user->id] ?? null;
-            return $user;
-        });
+{
+    try {
+        // Ambil daftar siswa yang memiliki akses ke absensi beserta NISN dan kelas dari tabel users
+        $siswaList = User::where('role_id', 4)->get(['id', 'name', 'nisn', 'kelas']);
 
         return response()->json($siswaList);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error fetching siswa data.' . $e->getMessage()], 500);
     }
+}
+
 
     public function show($id)
     {

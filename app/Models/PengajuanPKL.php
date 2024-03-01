@@ -22,7 +22,8 @@ class PengajuanPKL extends Model
         'file_cv',
         'file_portofolio',
         'group_id',
-        'pembimbing_id',
+        'pembimbing_id_1',
+        'pembimbing_id_2',
         'perusahaan_id',
         'status'
     ];
@@ -44,9 +45,8 @@ class PengajuanPKL extends Model
 
     public function pembimbing()
     {
-        return $this->belongsTo(User::class, 'pembimbing_id');
+        return $this->belongsTo(User::class, 'pembimbing_id_1', 'pembimbing_id_2');
     }
-
 
     public function user()
     {

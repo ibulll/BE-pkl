@@ -59,6 +59,21 @@ class UserController extends Controller
         }
     }
 
+    public function getDaftarKelas()
+    {
+        try {
+            $daftarKelas = [
+                'XII PPLG 1',
+                'XII PPLG 2',
+                'XII PPLG 3',
+            ];
+
+            return response()->json($daftarKelas);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error fetching daftar kelas: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function store(Request $request)
 {
     // Validasi request

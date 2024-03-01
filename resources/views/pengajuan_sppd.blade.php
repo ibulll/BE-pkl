@@ -103,7 +103,7 @@
     <div class="container">
         <div class="navbar">
             <div class="logo">
-                <img src="path-to-your-logo.png" alt="Logo">
+            <img src="../public/photos/jawabarat.png" alt="Logo SMK NEGERI 1 CIOMAS">
             </div>
             <div>
                 <h3>PEMERINTAH DAERAH PROVINSI JAWA BARAT</h3>
@@ -125,7 +125,7 @@
             <div class="clearfix">
                 <p>
                     <span class="label">Nama</span>
-                    <span class="value">: {{$nama}}</span>
+                    <span class="value">: {{$name}}</span>
                 </p>
                 <p>
                     <span class="label">NIP / NUPTK</span>

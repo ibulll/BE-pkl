@@ -4,30 +4,32 @@ use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GetEmailController;
+use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\PdfController;
 use App\Http\Controllers\Api\Admin\RoleController;
+use App\Http\Controllers\Api\Admin\SppdController;
 use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\EmailController;
 use App\Http\Controllers\APi\Admin\JurnalController;
-use App\Http\Controllers\Api\Kaprog\AbsenController;
-use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\Api\Admin\DashboardController;
-use App\Http\Controllers\Api\Pembimbing\SppdController;
 use App\Http\Controllers\Api\Admin\AbsenSiswaController;
 use App\Http\Controllers\Api\Admin\PembimbingController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\PerusahaanController;
-use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
-use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
 use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
-use App\Http\Controllers\Api\Pembimbing\DataAbsenController;
+use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
 use App\Http\Controllers\Api\Siswa\InfoPembimbingController;
-use App\Http\Controllers\Api\Kaprog\DashboardKaprogController;
+use App\Http\Controllers\Api\Siswa\AbsensiController;
+use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
+use App\Http\Controllers\Api\Pembimbing\JurnalDataController;
+use App\Http\Controllers\Api\Pembimbing\DataAbsenController;
+use App\Http\Controllers\Api\Pembimbing\PengajuanSppdController;
 use App\Http\Controllers\Api\Pembimbing\DashboardPembimbingController;
+use App\Http\Controllers\Api\Kaprog\DataJurnalController;
+use App\Http\Controllers\Api\Kaprog\DashboardKaprogController;
+use App\Http\Controllers\Api\Kaprog\AbsenController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -103,13 +105,20 @@ Route::prefix('admin')->group(function () {
 
         //pembimbing
         Route::get('/daftar', [PembimbingController::class, 'index']);
+        Route::get('/daftar-pengajuan', [PembimbingController::class, 'all']);
+        Route::get('/data-sppd', [PembimbingController::class, 'datasppd']);
         Route::get('/daftar-siswa', [PembimbingController::class, 'getDaftarSiswa']);
-        Route::get('/daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
+        Route::get('/daftar-kelas', [PengajuanPKLController::class, 'getDaftarKelas']);
+        // Route::get('/daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
         Route::post('/assign', [PembimbingController::class, 'assignToGroup']);
 
 
         Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
-        Route::post('/tambah-nosurat', [PdfController::class, 'verifyPdf']);
+
+        //sppdcontroller
+        Route::get('/sppd', [SppdController::class, 'index']);
+        Route::get('/detail-sppd/{id}', [SppdController::class, 'detail']);
+        Route::post('/tambah-nosurat', [SppdController::class, 'generatesppd']);
 
     });
 });
@@ -127,7 +136,7 @@ Route::prefix('siswa')->group(function () {
         ;
         //pengajuan siswa
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);
-        Route::get('/daftar-kelas', [PengajuanPKLController::class, 'getDaftarKelas']);
+        Route::get('/daftar-kelas-2', [PengajuanPKLController::class, 'getDaftarKelas']);
         Route::get('/daftar-perusahaan', [PengajuanPKLController::class, 'getDaftarPerusahaan']);
 
 
@@ -148,7 +157,9 @@ Route::prefix('pembimbing')->group(function () {
         Route::get('/dashboard', [DashboardPembimbingController::class, 'siswaDibimbing']);
         Route::get('/absen-siswa', [DataAbsenController::class, 'index']);
 
-        Route::post('/pengajuan-sppd', [SppdController::class, 'store']);
+        Route::post('/pengajuan-sppd', [PengajuanSppdController::class, 'store']);
+
+        Route::get('/data-jurnal', [JurnalDataController::class, 'index']);
     });
 });
 

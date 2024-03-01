@@ -16,6 +16,7 @@ class Pembimbing extends Model
         'status',
         'tanggal',
         'hari',
+        'lamanya_perjalanan',
         'waktu',
     ];
 
