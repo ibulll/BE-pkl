@@ -1,14 +1,14 @@
 <?php
 
-
 namespace App\Http\Controllers\Api\Pembimbing;
 
+use App\Models\User;
 use App\Models\Absensi;
 use App\Models\PengajuanPKL;
-use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DataAbsenController extends Controller
 {
@@ -33,48 +33,37 @@ class DataAbsenController extends Controller
             return response()->json(['message' => 'Anda belum dihubungkan dengan siswa untuk PKL'], 404);
         }
 
-        // Mengumpulkan data absensi terbaru untuk setiap siswa yang dibimbing
-        $data = [];
-        foreach ($siswa as $s) {
-            // Memeriksa apakah siswa terkait dengan pengajuan PKL yang memiliki pembimbing yang sedang login
-            $isRelated = $pengajuanPkl->where('user_id', $s->id)->isNotEmpty();
-            if ($isRelated) {
-                $absensi = Absensi::where('user_id', $s->id)
-                    ->latest() // Mengambil entri absensi terbaru untuk setiap user_id
-                    ->first();
-                if ($absensi) {
-                    // Memeriksa apakah foto absensi ada
-                    $fotoUrl = $absensi->foto ? asset('storage/' . $absensi->foto) : '';
+        // Mengembalikan data siswa dalam bentuk respons JSON
+        return response()->json(['siswa' => $siswa]);
+    }
 
-                    $data[] = [
-                        'user_id' => $s->id,
-                        'nama' => $s->name,
-                        'nisn' => $s->nisn,
-                        'kelas' => $s->kelas,
-                        'email' => $s->email,
-                        'absensi' => [
-                            'latitude' => $absensi->latitude,
-                            'longitude' => $absensi->longitude,
-                            'foto' => $fotoUrl,
-                            'tanggal_absen' => $absensi->tanggal_absen,
-                            'waktu_absen' => $absensi->waktu_absen,
-                        ],
-                    ];
-                } else {
-                    // Jika tidak ada data absensi, tambahkan entri dengan data absensi kosong
-                    $data[] = [
-                        'user_id' => $s->id,
-                        'nama' => $s->name,
-                        'nisn' => $s->nisn,
-                        'kelas' => $s->kelas,
-                        'email' => $s->email,
-                        'absensi' => null,
-                    ];
-                }
-            }
+    public function show($id)
+    {
+        // Ambil data absensi berdasarkan user_id
+        $absensi = Absensi::where('user_id', $id)->get();
+    
+        // Jika tidak ada data absensi ditemukan, kembalikan respons kesalahan
+        if ($absensi->isEmpty()) {
+            return response()->json(['message' => 'Data absensi tidak ditemukan untuk siswa dengan ID ' . $id], 404);
         }
-
-        // Mengembalikan data dalam bentuk respons JSON
-        return response()->json(['data' => $data]);
+    
+        // Menginisialisasi array untuk menyimpan data absensi
+        $formattedAbsensiList = [];
+    
+        // Mengiterasi melalui setiap data absensi dan menyimpannya dalam array yang diformat
+        foreach ($absensi as $absen) {
+            $absenData = [
+                'tanggal_absen' => $absen->tanggal_absen,
+                'waktu_absen' => $absen->waktu_absen,
+                'latitude' => $absen->latitude,
+                'longitude' => $absen->longitude,
+                'foto' => trim(Storage::url($absen->foto), '\\'), // Menghapus backslash dari URL
+            ];
+    
+            $formattedAbsensiList[] = $absenData;
+        }
+    
+        // Kembalikan data absensi dalam bentuk respons JSON
+        return response()->json(['absensi' => $formattedAbsensiList]);
     }
 }

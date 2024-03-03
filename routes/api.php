@@ -156,10 +156,13 @@ Route::prefix('pembimbing')->group(function () {
 
         Route::get('/dashboard', [DashboardPembimbingController::class, 'siswaDibimbing']);
         Route::get('/absen-siswa', [DataAbsenController::class, 'index']);
+        Route::get('/data-absen/{id}', [DataAbsenController::class, 'show']);
 
         Route::post('/pengajuan-sppd', [PengajuanSppdController::class, 'store']);
+      
 
-        Route::get('/data-jurnal', [JurnalDataController::class, 'index']);
+        Route::get('/data-jurnal-2', [JurnalDataController::class, 'index']);
+        Route::get('/data-jurnal/{id}', [JurnalDataController::class, 'show']);
     });
 });
 

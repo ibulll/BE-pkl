@@ -16,17 +16,17 @@ class SppdController extends Controller
         try {
             // Ambil semua data pembimbing (users) yang memiliki role_id 3 dan sudah memiliki ID dalam tabel pembimbing
             $pembimbings = User::where('role_id', 3)
-            ->whereHas('pembimbing', function ($query) {
-                $query->whereNotNull('id'); // Memeriksa apakah ada ID yang telah diinput dalam tabel pembimbing
-            })
-            ->leftJoin('pengajuan_pkl', function ($join) {
-                $join->on('users.id', '=', 'pengajuan_pkl.pembimbing_id_1')
-                    ->orOn('users.id', '=', 'pengajuan_pkl.pembimbing_id_2');
-            })
-            ->whereNotNull('pengajuan_pkl.nama_perusahaan') // Menambahkan kondisi untuk mengecualikan nama_perusahaan yang null
-            ->select('users.*', 'pengajuan_pkl.nama_perusahaan')
-            ->get();
-        
+                ->whereHas('pembimbing', function ($query) {
+                    $query->whereNotNull('id'); // Memeriksa apakah ada ID yang telah diinput dalam tabel pembimbing
+                })
+                ->leftJoin('pengajuan_pkl', function ($join) {
+                    $join->on('users.id', '=', 'pengajuan_pkl.pembimbing_id_1')
+                        ->orOn('users.id', '=', 'pengajuan_pkl.pembimbing_id_2');
+                })
+                ->whereNotNull('pengajuan_pkl.nama_perusahaan') // Menambahkan kondisi untuk mengecualikan nama_perusahaan yang null
+                ->select('users.*', 'pengajuan_pkl.nama_perusahaan')
+                ->get();
+
             // Loop melalui setiap pembimbing dan ambil data yang diperlukan
             $dataPembimbings = $pembimbings->map(function ($pembimbing) {
                 return [
@@ -56,10 +56,14 @@ class SppdController extends Controller
             if (!$pembimbing) {
                 return response()->json(['error' => 'Pembimbing not found'], 404);
             }
+            // Ambil data user berdasarkan user_id
+            $user = User::find($user_id);
+
 
             // Kirim respons JSON dengan detail pembimbing
             return response()->json([
                 'user_id' => $pembimbing->user_id,
+                'name' => $user->name,
                 'status' => $pembimbing->status,
                 'tanggal' => $pembimbing->tanggal,
                 'hari' => $pembimbing->hari,

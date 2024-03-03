@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Siswa;
 use App\Models\Absensi;
 use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -38,6 +39,18 @@ class AbsensiController extends Controller
         // Dapatkan tanggal absen dari permintaan
         $tanggal_absen = $request->tanggal_absen;
     
+        // Ambil waktu saat ini
+        $now = Carbon::now();
+    
+        // Ambil waktu 7 pagi hari ini
+        $resetTime = Carbon::now()->setTime(7, 0, 0);
+    
+        // Periksa apakah sudah melewati waktu reset
+        if ($now->greaterThan($resetTime)) {
+            // Reset absensi untuk hari ini
+            Absensi::where('user_id', Auth::id())->whereDate('tanggal_absen', $now->toDateString())->delete();
+        }
+    
         // Periksa apakah siswa sudah melakukan absensi pada tanggal yang sama
         $absensiSiswa = Absensi::where('user_id', Auth::id())
                                ->whereDate('tanggal_absen', $tanggal_absen)
@@ -65,7 +78,7 @@ class AbsensiController extends Controller
     
         // Respons berhasil absen beserta URL foto
         return response()->json(['message' => 'Absensi berhasil disimpan', 'foto_url' => $fotoUrl], 201); 
-    }    
+    }
 
 
     public function list()
