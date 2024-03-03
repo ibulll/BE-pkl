@@ -29,7 +29,15 @@ class PengajuanSiswaController extends Controller
                 $item->kelas = $siswa->kelas;
             });
     
-            return response()->json(['data' => $pengajuan]);
+            // Filter agar hanya satu pengajuan yang ditampilkan untuk setiap user_id
+            $filteredPengajuan = collect([]);
+            $pengajuan->each(function ($item) use ($filteredPengajuan) {
+                if (!$filteredPengajuan->contains('user_id', $item->user_id)) {
+                    $filteredPengajuan->push($item);
+                }
+            });
+    
+            return response()->json(['data' => $filteredPengajuan]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error retrieving Pengajuan PKL: ' . $e->getMessage()], 500);
         }

@@ -158,7 +158,7 @@
                 </p>
                 <p>
                     <span class="label">Tempat</span>
-                    <span class="value">: {{$namaperusahaan}}</span>
+                    <span class="value">: {{$nama_perusahaan}}</span>
                 </p>
             </div>
             <p>Demikian surat tugas ini dibuat, untuk dapat dilaksanakan sebaik-baiknya.</p>
@@ -194,8 +194,8 @@
                 diperintahkan
             </p>
             <p>1.Kepala Sekolah</p>
-            <p>2 Hendi Santoso, M.Si</p>
-            <p>NIP. -</p>
+            <p>{{$name}}</p>
+            <p>{{$nip}}</p>
             <p>Pangkat dan Golongan gaji menurut 1.- PP No. 6 Tahun 1997</p>
             <p>Jabatan/Intans</p>
             <p>Maksud Perjalanan Dinas Alat Angkutan yang Dipergunakan</p>

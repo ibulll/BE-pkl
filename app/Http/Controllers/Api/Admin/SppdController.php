@@ -14,16 +14,19 @@ class SppdController extends Controller
     public function index()
     {
         try {
-            // Ambil semua data pembimbing (users) yang memiliki role_id 3 beserta data PengajuanPKL yang terkait
+            // Ambil semua data pembimbing (users) yang memiliki role_id 3 dan sudah memiliki ID dalam tabel pembimbing
             $pembimbings = User::where('role_id', 3)
-                ->leftJoin('pengajuan_pkl', function ($join) {
-                    $join->on('users.id', '=', 'pengajuan_pkl.pembimbing_id_1')
-                        ->orOn('users.id', '=', 'pengajuan_pkl.pembimbing_id_2');
-                })
-                ->select('users.*', 'pengajuan_pkl.nama_perusahaan')
-                ->get();
-
-
+            ->whereHas('pembimbing', function ($query) {
+                $query->whereNotNull('id'); // Memeriksa apakah ada ID yang telah diinput dalam tabel pembimbing
+            })
+            ->leftJoin('pengajuan_pkl', function ($join) {
+                $join->on('users.id', '=', 'pengajuan_pkl.pembimbing_id_1')
+                    ->orOn('users.id', '=', 'pengajuan_pkl.pembimbing_id_2');
+            })
+            ->whereNotNull('pengajuan_pkl.nama_perusahaan') // Menambahkan kondisi untuk mengecualikan nama_perusahaan yang null
+            ->select('users.*', 'pengajuan_pkl.nama_perusahaan')
+            ->get();
+        
             // Loop melalui setiap pembimbing dan ambil data yang diperlukan
             $dataPembimbings = $pembimbings->map(function ($pembimbing) {
                 return [
@@ -43,8 +46,6 @@ class SppdController extends Controller
             return response()->json(['error' => 'Error fetching pembimbing data.' . $e->getMessage()], 500);
         }
     }
-
-
     public function detail($user_id)
     {
         try {
@@ -93,8 +94,9 @@ class SppdController extends Controller
             $pembimbing = Pembimbing::where('user_id', $userId)->firstOrFail();
 
             // Ambil data nama perusahaan dari pengajuanpkl yang terkait dengan pembimbing_id_1 atau pembimbing_id_2
-            $namaperusahaan = PengajuanPKL::where('pembimbing_id_1', $userId)
+            $nama_perusahaan = PengajuanPKL::where('pembimbing_id_1', $userId)
                 ->orWhere('pembimbing_id_2', $userId)
+                ->whereNotNull('nama_perusahaan') // Menambahkan kondisi untuk mengecualikan nama_perusahaan yang null
                 ->value('nama_perusahaan');
 
             // Mengumpulkan data pembimbing dan data tambahan ke dalam satu array
@@ -109,7 +111,7 @@ class SppdController extends Controller
                 'tanggal' => $pembimbing->tanggal,
                 'waktu' => $pembimbing->waktu,
                 'lamanya_perjalanan' => $pembimbing->lamanya_perjalanan,
-                'namaperusahaan' => $namaperusahaan,
+                'nama_perusahaan' => $nama_perusahaan,
                 // Tambahkan data lain yang diperlukan
             ];
 
@@ -119,11 +121,14 @@ class SppdController extends Controller
             // Generate nama file PDF berdasarkan nama pengguna
             $pdfName = "surat_pengajuan_sppd_" . $user->name . ".pdf";
 
+
+
             // Kembalikan file PDF sebagai respons
             return $pdf->download($pdfName);
 
         } catch (\Exception $e) {
             // Jika terjadi kesalahan, tangani kesalahan dan kirim respons kesalahan ke frontend
+
             return response()->json(['error' => 'Failed to generate and download PDF: ' . $e->getMessage()], 500);
         }
     }

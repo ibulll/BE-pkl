@@ -43,6 +43,8 @@ class PengajuanPKL extends Model
         return $this->hasMany(PengajuanPkl::class, 'user_id');
     }
 
+    
+
     public function pembimbing()
     {
         return $this->belongsTo(User::class, 'pembimbing_id_1', 'pembimbing_id_2');

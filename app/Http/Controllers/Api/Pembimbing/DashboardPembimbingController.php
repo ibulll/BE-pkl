@@ -24,17 +24,34 @@ class DashboardPembimbingController extends Controller
             $siswaIds = $pengajuanPkl->pluck('user_id')->toArray();
 
             // Ambil data siswa berdasarkan id yang terkumpul, hanya ambil id, nisn, name, dan email
-            $siswa = User::whereIn('id', $siswaIds)->get(['id', 'nisn', 'name', 'email']);
+            $siswa = User::whereIn('id', $siswaIds)->get(['id', 'nisn', 'name', 'email','kelas']);
 
             // Periksa apakah ada siswa yang dibimbing oleh pembimbing
             if ($siswa->isEmpty()) {
                 return response()->json(['message' => 'Tidak ada siswa yang dibimbing oleh pembimbing ini.'], 404);
             }
 
-            return response()->json($siswa);
+            // Mendapatkan nama perusahaan untuk setiap siswa
+            $data = [];
+            foreach ($siswa as $s) {
+                // Ambil data pengajuan PKL untuk siswa tertentu
+                $pengajuan = $pengajuanPkl->where('user_id', $s->id)->first();
+                // Jika pengajuan ditemukan, ambil nama perusahaan
+                $namaPerusahaan = $pengajuan ? $pengajuan->nama_perusahaan : null;
+
+                $data[] = [
+                    'user_id' => $s->id,
+                    'nama' => $s->name,
+                    'kelas'=>$s->kelas,
+                    'nisn' => $s->nisn,
+                    'email' => $s->email,
+                    'nama_perusahaan' => $namaPerusahaan, // Tambahkan nama perusahaan ke data siswa
+                ];
+            }
+
+            return response()->json(['data' => $data]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Gagal memuat data siswa.', 'message' => $e->getMessage()], 500);
         }
     }
-
 }
