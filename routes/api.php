@@ -4,31 +4,32 @@ use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\PdfController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\SppdController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Admin\EmailController;
 use App\Http\Controllers\APi\Admin\JurnalController;
+use App\Http\Controllers\Api\Kaprog\AbsenController;
+use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsenSiswaController;
 use App\Http\Controllers\Api\Admin\PembimbingController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\PerusahaanController;
-use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
+use App\Http\Controllers\Api\Kaprog\DataJurnalController;
 use App\Http\Controllers\Api\Siswa\JurnalSiswaController;
+use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
+use App\Http\Controllers\Api\Admin\PengajuanSiswaController;
+use App\Http\Controllers\Api\Pembimbing\DataAbsenController;
 use App\Http\Controllers\Api\Siswa\DashboardSiswaController;
 use App\Http\Controllers\Api\Siswa\InfoPembimbingController;
-use App\Http\Controllers\Api\Siswa\AbsensiController;
-use App\Http\Controllers\Api\Siswa\PengajuanPKLController;
+use App\Http\Controllers\Api\Kaprog\DataPembimbingController;
 use App\Http\Controllers\Api\Pembimbing\JurnalDataController;
-use App\Http\Controllers\Api\Pembimbing\DataAbsenController;
+use App\Http\Controllers\Api\Kaprog\DashboardKaprogController;
 use App\Http\Controllers\Api\Pembimbing\PengajuanSppdController;
 use App\Http\Controllers\Api\Pembimbing\DashboardPembimbingController;
-use App\Http\Controllers\Api\Kaprog\DataJurnalController;
-use App\Http\Controllers\Api\Kaprog\DashboardKaprogController;
-use App\Http\Controllers\Api\Kaprog\AbsenController;
 
 
 /*
@@ -159,21 +160,21 @@ Route::prefix('pembimbing')->group(function () {
         Route::get('/data-absen/{id}', [DataAbsenController::class, 'show']);
 
         Route::post('/pengajuan-sppd', [PengajuanSppdController::class, 'store']);
-      
+
 
         Route::get('/data-jurnal-2', [JurnalDataController::class, 'index']);
         Route::get('/data-jurnal/{id}', [JurnalDataController::class, 'show']);
     });
 });
 
+
 Route::prefix('kaprog')->group(function () {
-
     Route::group(['middleware' => ['auth:api', 'role:kaprog']], function () {
-
-        //Dashboard
         Route::get('/dashboard', [DashboardKaprogController::class, 'index']);
-
-        //AbsenSiswa
-        Route::get('/absen-siswa', [AbsenController::class, 'index']);
+        Route::get('/data-jurnal', [DataJurnalController::class, 'index']);
+        Route::get('/data-pembimbing', [DataPembimbingController::class,'index']);
+        Route::get('/data-jurnal/{id}', [DataJurnalController::class, 'show']);
+        Route::get('/absen-siswa', [AbsenController::class, 'index']); // Update endpoint here
+        Route::get('/absen-siswa/{id}', [AbsenController::class, 'show']);
     });
 });
