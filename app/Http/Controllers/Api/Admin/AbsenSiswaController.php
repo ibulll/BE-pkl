@@ -45,7 +45,7 @@ class AbsenSiswaController extends Controller
         foreach ($absensiList as $absensi) {
             $absensiData = [
                 'tanggal_absen' => $absensi->created_at->toDateString(),
-                'waktu_absen' => $absensi->created_at->toTimeString(), // Mengubah menjadi toTimeString()
+                'waktu_absen' => $absensi->waktu_absen, // Mengubah menjadi toTimeString()
                 'latitude' => $absensi->latitude,
                 'longitude' => $absensi->longitude,
                 'foto' => trim(Storage::url($absensi->foto), '\\'), // Menghapus backslash dari URL

@@ -156,6 +156,8 @@ Route::prefix('pembimbing')->group(function () {
     Route::group(['middleware' => ['auth:api', 'role:pembimbing']], function () {
 
         Route::get('/dashboard', [DashboardPembimbingController::class, 'siswaDibimbing']);
+        // Route::get('/daftar-pengajuan/{group_id}', [DashboardPembimbingController::class, 'show']);
+
         Route::get('/absen-siswa', [DataAbsenController::class, 'index']);
         Route::get('/data-absen/{id}', [DataAbsenController::class, 'show']);
 
