@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Kaprog;
 use App\Models\Absensi;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User; // Menggunakan model User
 
 class AbsenController extends Controller
@@ -21,9 +22,17 @@ class AbsenController extends Controller
     public function show($id)
     {
         // Mengambil data absensi berdasarkan ID siswa
-        $absensi = Absensi::where('user_id', $id)->get();
-
+        $absensi = Absensi::where('user_id', $id)->get(['tanggal_absen', 'waktu_absen', 'latitude', 'longitude', 'foto']);
+    
+        // Menghapus backslash dari URL foto
+        foreach ($absensi as $absen) {
+            $absen->foto = trim(Storage::url($absen->foto), '\\');
+        }
+    
         // Mengembalikan data absensi dalam bentuk response JSON
         return response()->json(['absensi' => $absensi]);
     }
+    
+    
+    
 }

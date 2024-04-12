@@ -37,6 +37,20 @@ class PermissionTableSeeder extends Seeder
         'jurnal.destroy'
     ];
 
+    protected $permissionPembimbing = [
+        'pengajuan.index',
+        'pengajuan.updateStatus',
+        'pengajuan.detail',
+        // Add more permissions for pembimbing here
+    ];
+    
+    protected $permissionKaprog = [
+        'pengajuan.index',
+        'pengajuan.updateStatus',
+        'pengajuan.detail',
+        // Add more permissions for kaprog here
+    ];
+
     /**
      * Run the database seeds.
      */
@@ -48,7 +62,7 @@ class PermissionTableSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'users.update', 'guard_name' => 'api']);
         Permission::firstOrCreate(['name' => 'users.delete', 'guard_name' => 'api']);
 
-        Permission::firstOrCreate(['name' => 'permissions.index', 'guard_name' => 'api']); 
+        Permission::firstOrCreate(['name' => 'permissions.index', 'guard_name' => 'api']);
 
         Permission::firstOrCreate(['name' => 'roles.index', 'guard_name' => 'api']);
         Permission::firstOrCreate(['name' => 'roles.create', 'guard_name' => 'api']);
@@ -66,7 +80,9 @@ class PermissionTableSeeder extends Seeder
         Permission::firstOrcreate(['name' => 'jurnal.update', 'guard_name' => 'api']);
         Permission::firstOrcreate(['name' => 'jurnal.destroy', 'guard_name' => 'api']);
 
-        
+        //permissions pembimbing
+
+
         // Assign permissions to roles
         $roles = Role::all();
 
@@ -76,7 +92,11 @@ class PermissionTableSeeder extends Seeder
                 $role->syncPermissions($this->permissionAdmin);
             } elseif ($role->name === 'siswa') {
                 $role->syncPermissions($this->permissionSiswa);
-            } 
+            } elseif ($role->name === 'pembimbing') {
+                $role->syncPermissions($this->permissionPembimbing);
+            } elseif ($role->name === 'kaprog') {
+                $role->syncPermissions($this->permissionKaprog);
+            }
         }
     }
 }
