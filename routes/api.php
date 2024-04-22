@@ -4,6 +4,7 @@ use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Admin\ImportAkun;
 use App\Http\Controllers\Api\Admin\PdfController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\SppdController;
@@ -115,11 +116,15 @@ Route::prefix('admin')->group(function () {
 
 
         Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
+        Route::get('/K-Pembimbing', [PdfController::class,'getPembimbing']);
 
         //sppdcontroller
         Route::get('/sppd', [SppdController::class, 'index']);
         Route::get('/detail-sppd/{id}', [SppdController::class, 'detail']);
         Route::post('/tambah-nosurat', [SppdController::class, 'generatesppd']);
+
+        //import akun
+        Route::post('import-akun', [ImportAkun::class, 'importStudents']);
 
     });
 });
@@ -133,7 +138,7 @@ Route::prefix('siswa')->group(function () {
         Route::get('/dashboard', [DashboardSiswaController::class, 'getDaftarAkunSiswa']);
 
         Route::get('/status', [DashboardSiswaController::class, 'status']);
-        Route::get('/statusWithCountdown', [DashboardSiswaController::class, 'status']);
+        Route::get('/Time', [DashboardSiswaController::class, 'status']);
         ;
         //pengajuan siswa
         Route::get('/daftar-siswa', [PengajuanPKLController::class, 'getDaftarSiswa']);

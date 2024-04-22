@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Models\User;
 use App\Models\PengajuanPkl;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -73,6 +74,28 @@ class PdfController extends Controller
         // Kembalikan file PDF sebagai respons
         return $pdf->download('surat_pengajuan_pkl.pdf');
     }
+
+    //akun pembimbing
+    public function getPembimbing(){
+        // Mengambil semua akun dengan role_id 3
+        $pembimbingAccounts = User::where('role_id', 3)->get();
+    
+        // Menyiapkan array kosong untuk menyimpan nama dan kontak pembimbing
+        $pembimbingList = [];
+    
+        // Melakukan iterasi pada setiap akun pembimbing
+        foreach($pembimbingAccounts as $pembimbing){
+            // Menambahkan nama dan kontak pembimbing ke dalam array
+            $pembimbingList[] = [
+                'nama' => $pembimbing->name,
+                'nomer_telpon' => $pembimbing->nomer_telpon // Asumsi bahwa kontak disimpan dalam field 'phone'
+            ];
+        }
+    
+        // Mengembalikan daftar nama dan kontak pembimbing
+        return $pembimbingList;
+    }
+    
 
     // Fungsi untuk mengonversi nomor ke format romawi
     private function convertToRoman($number)
