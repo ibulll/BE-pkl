@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Siswa;
 
+use Carbon\Carbon;
 use App\Models\Jurnal;
 use App\Models\PengajuanPKL;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class JurnalSiswaController extends Controller
 }
 
 
-    public function update(Request $request, $id)
+public function update(Request $request, $id)
 {
     $journal = Jurnal::find($id);
     if (!$journal) {
@@ -37,9 +38,20 @@ class JurnalSiswaController extends Controller
     // Update the journal entry with data from the request
     $journal->update($request->all());
 
-    // Return a success response
-    return response()->json(['message' => 'Journal updated successfully']);
+    // Ambil waktu update terbaru dan konversi ke zona waktu Jakarta
+    $updatedTime = Carbon::now()->timezone('Asia/Jakarta');
+
+    // Set the updated_at column of the journal to the current time in Jakarta timezone
+    $journal->updated_at = $updatedTime;
+    $journal->save();
+
+    // Return a success response along with updated time
+    return response()->json([
+        'message' => 'Journal updated successfully',
+        'updated_at' => $updatedTime->toDateTimeString(), // Format waktu dan tanggal (YYYY-MM-DD HH:MM:SS)
+    ]);
 }
+
 
 
     public function show($id)
@@ -56,31 +68,54 @@ class JurnalSiswaController extends Controller
     }
 
     public function store(Request $request)
+    {
+        // Mendapatkan ID user yang sedang login
+        $userId = Auth::id();
+    
+        // Memeriksa apakah pengguna memiliki permohonan PKL yang sudah diterima
+        $permohonan = PengajuanPKL::where('user_id', $userId)
+                                    ->where('status', 'Diterima')
+                                    ->first();
+    
+        if (!$permohonan) {
+            return response()->json(['message' => 'Anda belum memiliki permohonan PKL yang diterima'], 400);
+        }
+    
+        // Menyertakan user_id dalam data jurnal yang akan disimpan
+        $data = $request->all();
+        $data['user_id'] = $userId;
+    
+        // Mendapatkan waktu dan tanggal saat ini menggunakan Carbon dengan zona waktu Jakarta
+        $now = Carbon::now()->timezone('Asia/Jakarta');
+        $data['waktu_mulai'] = $now->toTimeString(); // Format waktu (HH:MM:SS)
+        $data['tanggal_mulai'] = $now->toDateString(); // Format tanggal (YYYY-MM-DD)
+    
+        $journal = Jurnal::create($data);
+    
+        return response()->json($journal, 201);
+    }
+    
+
+public function destroy($id)
 {
-    $request->validate([
-        'waktu' => 'required',
-        'tanggal' => 'required',
-    ]);
+    try {
+        // Cari data jurnal berdasarkan ID
+        $journal = Jurnal::find($id);
 
-    // Mendapatkan ID user yang sedang login
-    $userId = Auth::id();
+        // Jika data jurnal tidak ditemukan
+        if (!$journal) {
+            return response()->json(['message' => 'Journal not found'], 404);
+        }
 
-    // Memeriksa apakah pengguna memiliki permohonan PKL yang sudah diterima
-    $permohonan = PengajuanPKL::where('user_id', $userId)
-                                ->where('status', 'Diterima')
-                                ->first();
+        // Hapus data jurnal
+        $journal->delete();
 
-    if (!$permohonan) {
-        return response()->json(['message' => 'Anda belum memiliki permohonan PKL yang diterima'], 400);
+        // Berikan respons sukses
+        return response()->json(['message' => 'Journal deleted successfully'], 200);
+    } catch (\Exception $e) {
+        // Tangani kesalahan
+        return response()->json(['error' => 'Failed to delete journal. ' . $e->getMessage()], 500);
     }
 
-    // Menyertakan user_id dalam data jurnal yang akan disimpan
-    $data = array_merge($request->all(), ['user_id' => $userId]);
-
-    $journal = Jurnal::create($data);
-
-    return response()->json($journal, 201);
 }
-
-    
 }

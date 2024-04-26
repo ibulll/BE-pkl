@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Siswa;
 
-
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\PengajuanPKL;
@@ -22,12 +21,19 @@ class DashboardSiswaController extends Controller
 
     // Hitung waktu mundur untuk setiap pengajuan PKL
     foreach ($pendingApplications as $application) {
+        Carbon::setLocale('id'); // Sesuaikan locale dengan zona waktu pengguna
+        Carbon::setToStringFormat('j F Y H:i:s'); // Format string untuk tampilan countdown
+        
         $endDate = Carbon::parse($application->endDate);
-        $now = Carbon::now();
-        $countdown = $endDate->diffForHumans($now, [
-            'parts' => 5, // Menampilkan semua bagian (tahun, bulan, hari, jam, menit)
-            'join' => ', ',
-        ]);
+        $now = Carbon::now()->timezone('Asia/Jakarta'); // Sesuaikan dengan zona waktu pengguna
+
+        // Periksa apakah status adalah "Diterima"
+        if ($application->status === 'Diterima') {
+            $endDate = $endDate->addMonths(6); // Tambahkan 6 bulan ke waktu akhir
+        }
+        
+        // Ubah format tanggal menjadi ISO 8601
+        $countdown = $endDate->toIso8601String();
 
         // Tambahkan waktu mundur ke pengajuan PKL
         $application->countdown = $countdown;
@@ -36,6 +42,8 @@ class DashboardSiswaController extends Controller
     // Kembalikan data sebagai JSON response
     return response()->json($pendingApplications);
 }
+
+
 
     public function getDaftarAkunSiswa()
     {
