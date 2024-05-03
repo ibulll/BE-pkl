@@ -36,6 +36,7 @@ public function update(Request $request, $id)
     // Pastikan bahwa user hanya dapat mengubah jurnal yang dimilikinya
     if ($journal->user_id != Auth::id()) {
         return response()->json(['message' => 'Unauthorized'], 401);
+<<<<<<< HEAD
     }
 
     // Simpan status jurnal sebelum pembaruan
@@ -52,10 +53,21 @@ public function update(Request $request, $id)
         $journal->save();
     }
 
+=======
+    }
+
+    // Jika status diubah menjadi 'selesai', isi tanggal dan waktu selesai
+    if ($request->has('status') && $request->status == 'selesai') {
+        $now = Carbon::now()->timezone('Asia/Jakarta');
+        $journal->waktu_selesai = $now->toTimeString(); // Format waktu (HH:MM:SS)
+        $journal->tanggal_selesai = $now->toDateString(); // Format tanggal (YYYY-MM-DD)
+    }
+
+    $journal->update($request->all());
+
+>>>>>>> 91ad7c35ace3cd3546b1c61f540972adff77d58f
     return response()->json($journal, 200);
 }
-
-
 
     public function show($id)
     {

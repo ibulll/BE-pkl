@@ -126,4 +126,8 @@ class ExportJurnal extends Controller
         return $response;
     }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 91ad7c35ace3cd3546b1c61f540972adff77d58f

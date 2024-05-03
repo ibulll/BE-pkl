@@ -76,6 +76,29 @@ class PembimbingController extends Controller
             return response()->json(['error' => 'Gagal menugaskan pembimbing', 'message' => $e->getMessage()], 500);
         }
     }
+    public function detailAssign($id)
+{
+    try {
+        // Ambil daftar perusahaan yang sudah dibimbing oleh pembimbing dengan id yang diberikan
+        $companies = PengajuanPKL::where('pembimbing_id_1', $id)
+            ->orWhere('pembimbing_id_2', $id)
+            ->distinct()
+            ->pluck('nama_perusahaan')
+            ->filter() // Filter data null
+            ->values() // Mengubah hasil pluck menjadi array dengan indeks yang dimulai dari 0
+            ->toArray(); 
+
+        return response()->json(['companies' => $companies], 200);
+    } catch (\Exception $e) {
+        // Tangkap kesalahan dan kirimkan respons JSON dengan kode status 500
+        return response()->json(['error' => 'Gagal mengambil daftar perusahaan', 'message' => $e->getMessage()], 500);
+    }
+}
+
+    
+
+
+
 
     public function all()
     {

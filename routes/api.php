@@ -114,6 +114,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/daftar-kelas', [PengajuanPKLController::class, 'getDaftarKelas']);
         // Route::get('/daftar-pembimbing', [PembimbingController::class, 'getDaftarPembimbing']);
         Route::post('/assign', [PembimbingController::class, 'assignToGroup']);
+        Route::get('/detail-assign/{id}', [PembimbingController::class, 'detailAssign']);
 
 
         Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
@@ -128,6 +129,10 @@ Route::prefix('admin')->group(function () {
         //import akun
         Route::post('import-akun', [ImportAkun::class, 'importStudents']);
 
+
+        //export
+        Route::get('/export-jurnal/{id}' ,[ExportJurnal::class, 'exportById']);
+        Route::get('/export-all' ,[ExportJurnal::class, 'exportAll']);
     });
 });
 
