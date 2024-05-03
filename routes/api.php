@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\LaporanPklController;
 use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
@@ -116,6 +117,7 @@ Route::prefix('admin')->group(function () {
 
 
         Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
+        Route::post('/generate-laporan', [LaporanPklController::class, 'generatelaporan']);
         Route::get('/K-Pembimbing', [PdfController::class,'getPembimbing']);
 
         //sppdcontroller

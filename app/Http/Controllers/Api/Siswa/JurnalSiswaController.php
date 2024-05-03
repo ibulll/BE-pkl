@@ -30,26 +30,29 @@ class JurnalSiswaController extends Controller
 
 public function update(Request $request, $id)
 {
-    $journal = Jurnal::find($id);
-    if (!$journal) {
-        return response()->json(['message' => 'Journal not found'], 404);
+    // Temukan jurnal berdasarkan ID
+    $journal = Jurnal::findOrFail($id);
+
+    // Pastikan bahwa user hanya dapat mengubah jurnal yang dimilikinya
+    if ($journal->user_id != Auth::id()) {
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-    // Update the journal entry with data from the request
+    // Simpan status jurnal sebelum pembaruan
+    $previousStatus = $journal->status;
+
+    // Update jurnal dengan data yang diberikan
     $journal->update($request->all());
 
-    // Ambil waktu update terbaru dan konversi ke zona waktu Jakarta
-    $updatedTime = Carbon::now()->timezone('Asia/Jakarta');
+    // Jika status diubah menjadi 'selesai' dan sebelumnya bukan 'selesai', isi waktu_selesai dan tanggal_selesai
+    if ($request->has('status') && $request->status == 'selesai' && $previousStatus != 'selesai') {
+        $now = Carbon::now()->timezone('Asia/Jakarta');
+        $journal->waktu_selesai = $now->toTimeString(); // Format waktu (HH:MM:SS)
+        $journal->tanggal_selesai = $now->toDateString(); // Format tanggal (YYYY-MM-DD)
+        $journal->save();
+    }
 
-    // Set the updated_at column of the journal to the current time in Jakarta timezone
-    $journal->updated_at = $updatedTime;
-    $journal->save();
-
-    // Return a success response along with updated time
-    return response()->json([
-        'message' => 'Journal updated successfully',
-        'updated_at' => $updatedTime->toDateTimeString(), // Format waktu dan tanggal (YYYY-MM-DD HH:MM:SS)
-    ]);
+    return response()->json($journal, 200);
 }
 
 
