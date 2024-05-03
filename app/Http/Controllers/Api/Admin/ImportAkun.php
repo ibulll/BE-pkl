@@ -15,7 +15,7 @@ class ImportAkun extends Controller
     public function importStudents(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:xlsx,xls',
+            'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
     
         if ($validator->fails()) {
