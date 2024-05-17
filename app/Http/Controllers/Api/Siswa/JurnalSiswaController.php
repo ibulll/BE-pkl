@@ -38,14 +38,19 @@ public function update(Request $request, $id)
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-    // Jika status diubah menjadi 'selesai', isi tanggal dan waktu selesai
-    if ($request->has('status') && $request->status == 'selesai') {
+    // Simpan status jurnal sebelum pembaruan
+    $previousStatus = $journal->status;
+
+    // Update jurnal dengan data yang diberikan
+    $journal->update($request->all());
+
+    // Jika status diubah menjadi 'selesai' dan sebelumnya bukan 'selesai', isi waktu_selesai dan tanggal_selesai
+    if ($request->has('status') && $request->status == 'selesai' && $previousStatus != 'selesai') {
         $now = Carbon::now()->timezone('Asia/Jakarta');
         $journal->waktu_selesai = $now->toTimeString(); // Format waktu (HH:MM:SS)
         $journal->tanggal_selesai = $now->toDateString(); // Format tanggal (YYYY-MM-DD)
+        $journal->save();
     }
-
-    $journal->update($request->all());
 
     return response()->json($journal, 200);
 }

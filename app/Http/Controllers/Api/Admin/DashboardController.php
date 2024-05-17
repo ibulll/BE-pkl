@@ -21,10 +21,18 @@ class DashboardController extends Controller
             // Jumlah pembimbing
             $countPembimbing = User::where('role_id', '3')->count();
 
+            //jumlah kaprog
+            $countKaprog = User::where('role_id', '2')->count();
+
+            //jumlah admin
+            $countAdmin = User::where('role_id', '1')->count();
+
             return response()->json([
                 'countUsers' => $countUsers,
                 'countSiswa' => $countSiswa,
                 'countPembimbing' => $countPembimbing,
+                'countKaprog' => $countKaprog,
+                'countAdmin' => $countAdmin,
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error fetching data.' . $e->getMessage(),
