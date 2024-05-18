@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\ExportJurnal;
 use App\Models\Absensi;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\ImportAkun;
+use App\Http\Controllers\Api\Admin\ExportJurnal;
 use App\Http\Controllers\Api\Admin\PdfController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\SppdController;
@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Kaprog\AbsenController;
 use App\Http\Controllers\Api\Siswa\AbsensiController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsenSiswaController;
+use App\Http\Controllers\Api\Admin\LaporanPklController;
 use App\Http\Controllers\Api\Admin\PembimbingController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\PerusahaanController;
@@ -118,6 +119,7 @@ Route::prefix('admin')->group(function () {
 
 
         Route::post('/generate-pdf', [PdfController::class, 'generatePDF']);
+        Route::post('/generate-laporan', [LaporanPklController::class, 'generatelaporan']);
         Route::get('/K-Pembimbing', [PdfController::class,'getPembimbing']);
 
         //sppdcontroller

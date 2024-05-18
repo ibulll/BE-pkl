@@ -44,6 +44,12 @@ public function update(Request $request, $id)
     // Update jurnal dengan data yang diberikan
     $journal->update($request->all());
 
+    // Simpan status jurnal sebelum pembaruan
+    $previousStatus = $journal->status;
+
+    // Update jurnal dengan data yang diberikan
+    $journal->update($request->all());
+
     // Jika status diubah menjadi 'selesai' dan sebelumnya bukan 'selesai', isi waktu_selesai dan tanggal_selesai
     if ($request->has('status') && $request->status == 'selesai' && $previousStatus != 'selesai') {
         $now = Carbon::now()->timezone('Asia/Jakarta');

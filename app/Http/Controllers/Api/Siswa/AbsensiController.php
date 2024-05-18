@@ -98,4 +98,3 @@ class AbsensiController extends Controller
     }
 
 }
-
