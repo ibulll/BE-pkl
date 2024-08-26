@@ -21,7 +21,7 @@ class UserTableSeeder extends Seeder
             'nomer_telpon' => '087635272635',
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
-            'password' => bcrypt('password'),
+            'password' => bcrypt(''),
             'role_id' => 1,
         ]);
         $admin->assignRole('admin');
